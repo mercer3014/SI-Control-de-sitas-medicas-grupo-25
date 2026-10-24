@@ -52,7 +52,7 @@ Se implementaron de forma completa los dos primeros módulos del alcance oficial
 ### Requisitos Previos
 1. PHP 8.2 o superior con extensiones `pdo_pgsql` y `pgsql` habilitadas.
 2. Composer 2.x
-3. Node.js 18+ y npm
+3. Node.js 18+ y pnpm (v9+)
 4. PostgreSQL 14+ con la base de datos `clinica` creada.
 
 ### Pasos de Configuración:
@@ -63,7 +63,7 @@ cd "SI-Control-de-sitas-medicas-grupo-25"
 
 # 2. Instalar dependencias backend y frontend
 composer install
-npm install
+pnpm install
 
 # 3. Configurar variables de entorno
 cp .env.example .env
@@ -82,7 +82,7 @@ php artisan key:generate
 php artisan migrate:fresh --seed
 
 # 5. Compilar assets frontend
-npm run build
+pnpm run build
 
 # 6. Iniciar servidor local
 php artisan serve
