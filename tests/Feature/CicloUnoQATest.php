@@ -96,19 +96,19 @@ class CicloUnoQATest extends TestCase
     {
         $admin = UsuarioModel::where('username', 'admin')->first();
 
-        // Crear una especialidad
+        // Crear una especialidad nueva
         $this->actingAs($admin)->post('/especialidades', [
-            'nombre' => 'Traumatología',
-            'descripcion' => 'Lesiones osteoarticulares',
+            'nombre' => 'Urología Clínica',
+            'descripcion' => 'Aparato urinario y reproductor',
         ]);
 
         $this->assertDatabaseHas('especialidades', [
-            'nombre' => 'Traumatología',
+            'nombre' => 'Urología Clínica',
         ]);
 
         // Intentar registrar la misma especialidad
         $response = $this->actingAs($admin)->post('/especialidades', [
-            'nombre' => 'Traumatología',
+            'nombre' => 'Urología Clínica',
             'descripcion' => 'Duplicado',
         ]);
 
