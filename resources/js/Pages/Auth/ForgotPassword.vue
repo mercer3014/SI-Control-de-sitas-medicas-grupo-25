@@ -1,57 +1,68 @@
 <template>
-  <div class="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4">
-    <div class="w-full max-w-sm bg-white rounded-lg border border-slate-200 shadow-sm p-6 sm:p-8">
-      <div class="w-10 h-10 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-5 shadow-xs">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-        </svg>
+  <GuestLayout>
+    <Head title="Recuperar contraseña" />
+
+    <div class="mb-8">
+      <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-100">
+        <AppIcon name="key" class="h-6 w-6 text-brand-700" />
       </div>
-
-      <h1 class="text-lg font-bold text-slate-900 tracking-tight mb-2">Recuperar contraseña</h1>
-      <p class="text-xs text-slate-500 mb-5 leading-relaxed">
-        Ingresa tu correo electrónico registrado para recibir el código de verificación de 6 dígitos.
+      <h1 class="text-[24px] font-bold tracking-tight text-stone-900">Recuperar contraseña</h1>
+      <p class="mt-1.5 text-[13.5px] leading-relaxed text-stone-500">
+        Ingresa tu correo institucional y te enviaremos un código de verificación de 6 dígitos válido por 15 minutos.
       </p>
-
-      <form @submit.prevent="submit" class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1.5">Correo electrónico</label>
-          <input 
-            v-model="form.email" 
-            type="email" 
-            required 
-            placeholder="nombre@correo.com"
-            class="w-full px-3 py-2 text-xs rounded border border-slate-300 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition text-slate-800"
-            :class="{ 'border-rose-400': form.errors.email }"
-          />
-          <p v-if="form.errors.email" class="text-[11px] text-rose-600 mt-1">
-            {{ form.errors.email }}
-          </p>
-        </div>
-
-        <div class="pt-1 flex flex-col gap-2">
-          <button 
-            type="submit" 
-            :disabled="form.processing"
-            class="w-full py-2 px-4 text-xs font-semibold rounded text-white bg-slate-900 hover:bg-slate-800 transition shadow-xs disabled:opacity-50 cursor-pointer"
-          >
-            <span v-if="form.processing">Enviando...</span>
-            <span v-else>Enviar código</span>
-          </button>
-
-          <Link 
-            :href="'/login'" 
-            class="text-center py-1.5 text-xs text-slate-500 hover:text-slate-800 transition"
-          >
-            Volver a inicio de sesión
-          </Link>
-        </div>
-      </form>
     </div>
-  </div>
+
+    <form @submit.prevent="submit" class="space-y-4">
+      <FormField
+        id="email"
+        label="Correo electrónico"
+        :error="form.errors.email"
+        required
+      >
+        <template #default="{ inputClass, id }">
+          <div class="relative">
+            <AppIcon name="mail" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+            <input
+              :id="id"
+              v-model="form.email"
+              type="email"
+              required
+              autocomplete="username"
+              placeholder="nombre@correo.com"
+              :class="[inputClass, 'pl-9']"
+            />
+          </div>
+        </template>
+      </FormField>
+
+      <button
+        type="submit"
+        :disabled="form.processing"
+        class="btn-clinica w-full bg-brand-600 py-2.5 text-[14px] text-white shadow-sm hover:bg-brand-700"
+      >
+        <svg v-if="form.processing" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+        </svg>
+        {{ form.processing ? 'Enviando código…' : 'Enviar código de verificación' }}
+      </button>
+
+      <Link
+        href="/login"
+        class="group flex items-center justify-center gap-1.5 py-1 text-[13px] font-semibold text-stone-500 transition hover:text-brand-700"
+      >
+        <AppIcon name="chevron-left" class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+        Volver a inicio de sesión
+      </Link>
+    </form>
+  </GuestLayout>
 </template>
 
 <script setup>
-import { useForm, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
+import FormField from '@/Components/FormField.vue';
+import AppIcon from '@/Components/AppIcon.vue';
 
 const form = useForm({
   email: '',

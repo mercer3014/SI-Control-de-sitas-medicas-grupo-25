@@ -38,6 +38,9 @@ class PasswordResetController extends Controller
             ['token' => $token, 'created_at' => now()]
         );
 
+        // Persistir también el código en la ficha de seguridad del usuario
+        $usuario->generarCodigoRecuperacion($token);
+
         $htmlContent = "
             <div style='font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;'>
                 <h2 style='color: #0F2942; text-align: center;'>Clínica Vida Salud</h2>
@@ -99,9 +102,9 @@ class PasswordResetController extends Controller
 
         $usuario = UsuarioModel::where('email', $request->email)->first();
         $usuario->password = Hash::make($request->password);
-        $usuario->intentos_fallidos = 0;
-        $usuario->bloqueado_hasta = null;
-        $usuario->save();
+        // Restablecer la contraseña también revierte cualquier nivel de bloqueo
+        $usuario->desbloquear();
+        $usuario->limpiarCodigoRecuperacion();
 
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 

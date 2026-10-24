@@ -153,19 +153,32 @@ class UsuarioController extends Controller
         return back()->with('success', 'Datos del usuario actualizados correctamente.');
     }
 
-    public function destroy(UsuarioModel $usuario)
+    public function toggle(UsuarioModel $usuario)
     {
-        // No permitir desactivar al propio usuario logueado
         if ($usuario->id === auth()->id()) {
-            return back()->with('error', 'No puedes desactivar tu propia cuenta activa.');
+            return back()->with('error', 'No puedes cambiar el estado de tu propia cuenta activa.');
         }
 
         $nuevoEstado = !$usuario->estado;
         $usuario->update(['estado' => $nuevoEstado]);
 
         $accion = $nuevoEstado ? 'ACTIVACION_USUARIO' : 'DESACTIVACION_USUARIO';
-        BitacoraService::registrar($accion, 'Seguridad', "Estado cambiado a " . ($nuevoEstado ? 'Activo' : 'Inactivo') . " para {$usuario->username}");
+        BitacoraService::registrar($accion, 'Seguridad', "Estado cambiado a " . ($nuevoEstado ? 'Activo' : 'Inactivo') . " para {$usuario->username}", $usuario->id);
 
         return back()->with('success', 'Estado del usuario modificado con éxito.');
+    }
+
+    public function destroy(UsuarioModel $usuario)
+    {
+        // No permitir eliminar al propio usuario logueado
+        if ($usuario->id === auth()->id()) {
+            return back()->with('error', 'No puedes eliminar tu propia cuenta activa.');
+        }
+
+        $usuario->update(['estado' => false]);
+
+        BitacoraService::registrar('ELIMINACION_USUARIO', 'Seguridad', "Usuario eliminado (baja lógica): {$usuario->username}", $usuario->id);
+
+        return back()->with('success', 'Usuario eliminado correctamente.');
     }
 }

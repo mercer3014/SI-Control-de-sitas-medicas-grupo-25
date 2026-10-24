@@ -1,99 +1,123 @@
 <template>
-  <div class="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4">
-    <div class="w-full max-w-sm bg-white rounded-lg border border-slate-200 shadow-sm p-6 sm:p-8">
-      <div class="w-10 h-10 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-5 shadow-xs">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      </div>
+  <GuestLayout>
+    <Head title="Restablecer contraseña" />
 
-      <h1 class="text-lg font-bold text-slate-900 tracking-tight mb-2">Restablecer contraseña</h1>
-      <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-        Ingresa el código de 6 dígitos enviado a tu correo y tu nueva contraseña.
+    <div class="mb-8">
+      <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-100">
+        <AppIcon name="shield-check" class="h-6 w-6 text-brand-700" />
+      </div>
+      <h1 class="text-[24px] font-bold tracking-tight text-stone-900">Restablecer contraseña</h1>
+      <p class="mt-1.5 text-[13.5px] leading-relaxed text-stone-500">
+        Ingresa el código de 6 dígitos que enviamos a tu correo y define tu nueva contraseña.
       </p>
-
-      <div v-if="$page.props.flash?.success" class="mb-4 p-3 bg-slate-50 border border-slate-300 rounded text-xs text-slate-700 leading-snug">
-        {{ $page.props.flash.success }}
-      </div>
-
-      <form @submit.prevent="submit" class="space-y-3.5">
-        <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Correo electrónico</label>
-          <input 
-            v-model="form.email" 
-            type="email" 
-            required 
-            readonly
-            class="w-full px-3 py-1.5 text-xs rounded border border-slate-200 bg-slate-100 text-slate-600 outline-none"
-          />
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Código de verificación (6 dígitos)</label>
-          <input 
-            v-model="form.token" 
-            type="text" 
-            required 
-            maxlength="6"
-            placeholder="123456"
-            class="w-full px-3 py-1.5 text-xs font-mono font-bold tracking-widest text-center rounded border border-slate-300 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition"
-            :class="{ 'border-rose-400': form.errors.token }"
-          />
-          <p v-if="form.errors.token" class="text-[11px] text-rose-600 mt-1">
-            {{ form.errors.token }}
-          </p>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Nueva contraseña</label>
-          <input 
-            v-model="form.password" 
-            type="password" 
-            required 
-            placeholder="Mínimo 6 caracteres"
-            class="w-full px-3 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition text-slate-800"
-            :class="{ 'border-rose-400': form.errors.password }"
-          />
-          <p v-if="form.errors.password" class="text-[11px] text-rose-600 mt-1">
-            {{ form.errors.password }}
-          </p>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-slate-700 mb-1">Confirmar contraseña</label>
-          <input 
-            v-model="form.password_confirmation" 
-            type="password" 
-            required 
-            placeholder="Repite la contraseña"
-            class="w-full px-3 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition text-slate-800"
-          />
-        </div>
-
-        <div class="pt-2 flex flex-col gap-2">
-          <button 
-            type="submit" 
-            :disabled="form.processing"
-            class="w-full py-2 px-4 text-xs font-semibold rounded text-white bg-slate-900 hover:bg-slate-800 transition shadow-xs disabled:opacity-50 cursor-pointer"
-          >
-            <span v-if="form.processing">Actualizando...</span>
-            <span v-else>Guardar nueva contraseña</span>
-          </button>
-
-          <Link 
-            :href="'/login'" 
-            class="text-center py-1.5 text-xs text-slate-500 hover:text-slate-800 transition"
-          >
-            Cancelar y volver al login
-          </Link>
-        </div>
-      </form>
     </div>
-  </div>
+
+    <div
+      v-if="$page.props.flash?.success"
+      class="mb-5 flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-[13px] font-medium text-emerald-700 animate-scale-in"
+    >
+      <AppIcon name="check-circle" class="mt-0.5 h-4 w-4 shrink-0" />
+      <span>{{ $page.props.flash.success }}</span>
+    </div>
+
+    <form @submit.prevent="submit" class="space-y-4">
+      <FormField id="email" label="Correo electrónico">
+        <template #default="{ inputClass, id }">
+          <div class="relative">
+            <AppIcon name="mail" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+            <input
+              :id="id"
+              v-model="form.email"
+              type="email"
+              readonly
+              :class="[inputClass, 'pl-9 bg-stone-100 text-stone-500']"
+            />
+          </div>
+        </template>
+      </FormField>
+
+      <FormField
+        id="token"
+        label="Código de verificación"
+        :error="form.errors.token"
+        hint="Revisa tu bandeja de entrada; el código expira en 15 minutos."
+        required
+      >
+        <template #default="{ inputClass, id }">
+          <input
+            :id="id"
+            v-model="form.token"
+            type="text"
+            inputmode="numeric"
+            required
+            maxlength="6"
+            placeholder="●●●●●●"
+            :class="[inputClass, 'text-center font-mono text-[18px] font-bold tracking-[0.5em]']"
+          />
+        </template>
+      </FormField>
+
+      <FormField
+        id="password"
+        label="Nueva contraseña"
+        :error="form.errors.password"
+        required
+      >
+        <template #default="{ inputClass, id }">
+          <input
+            :id="id"
+            v-model="form.password"
+            type="password"
+            required
+            autocomplete="new-password"
+            placeholder="Mínimo 6 caracteres"
+            :class="inputClass"
+          />
+        </template>
+      </FormField>
+
+      <FormField id="password_confirmation" label="Confirmar contraseña" required>
+        <template #default="{ inputClass, id }">
+          <input
+            :id="id"
+            v-model="form.password_confirmation"
+            type="password"
+            required
+            autocomplete="new-password"
+            placeholder="Repite la contraseña"
+            :class="inputClass"
+          />
+        </template>
+      </FormField>
+
+      <button
+        type="submit"
+        :disabled="form.processing"
+        class="btn-clinica w-full bg-brand-600 py-2.5 text-[14px] text-white shadow-sm hover:bg-brand-700"
+      >
+        <svg v-if="form.processing" class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+        </svg>
+        {{ form.processing ? 'Actualizando…' : 'Guardar nueva contraseña' }}
+      </button>
+
+      <Link
+        href="/login"
+        class="group flex items-center justify-center gap-1.5 py-1 text-[13px] font-semibold text-stone-500 transition hover:text-brand-700"
+      >
+        <AppIcon name="chevron-left" class="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+        Cancelar y volver al login
+      </Link>
+    </form>
+  </GuestLayout>
 </template>
 
 <script setup>
-import { useForm, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
+import FormField from '@/Components/FormField.vue';
+import AppIcon from '@/Components/AppIcon.vue';
 
 const props = defineProps({
   email: { type: String, default: '' },

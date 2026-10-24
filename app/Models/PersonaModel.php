@@ -27,6 +27,20 @@ class PersonaModel extends Model
         'fecha_registro' => 'datetime',
     ];
 
+    protected $appends = ['nombre_completo', 'iniciales', 'edad'];
+
+    public function getInicialesAttribute(): string
+    {
+        $n = mb_substr(trim($this->nombres ?? ''), 0, 1);
+        $a = mb_substr(trim($this->apellidos ?? ''), 0, 1);
+        return mb_strtoupper($n . $a);
+    }
+
+    public function getEdadAttribute(): ?int
+    {
+        return $this->fecha_nacimiento ? $this->fecha_nacimiento->age : null;
+    }
+
     public function getNombreCompletoAttribute(): string
     {
         return "{$this->nombres} {$this->apellidos}";

@@ -51,46 +51,64 @@ class AuthController extends Controller
             return back()->withErrors([$inputKey => 'Esta cuenta se encuentra desactivada.']);
         }
 
-        // Verificar si la cuenta está bloqueada temporalmente
+        // Verificar bloqueo (temporal vigente o permanente por nivel 3)
         if ($usuario->isBloqueado()) {
-            $minutosRestantes = max(1, (int) ceil(now()->diffInSeconds($usuario->bloqueado_hasta) / 60));
-            BitacoraService::registrar('ACCESO_BLOQUEADO', 'Seguridad', "Intento durante bloqueo: {$usuario->username}", $usuario->id);
+            if ($usuario->esBloqueoPermanente()) {
+                BitacoraService::registrar('ACCESO_BLOQUEADO', 'Seguridad', "Intento en cuenta con bloqueo permanente: {$usuario->username}", $usuario->id);
+                return back()->withErrors([
+                    $inputKey => 'Tu cuenta fue bloqueada permanentemente por seguridad. Contacta al administrador o restablece tu contraseña.',
+                ]);
+            }
+
+            $minutosRestantes = $usuario->minutosBloqueoRestantes();
+            BitacoraService::registrar('ACCESO_BLOQUEADO', 'Seguridad', "Intento durante bloqueo (nivel {$usuario->nivel_bloqueo}): {$usuario->username}", $usuario->id);
             return back()->withErrors([
                 $inputKey => "Cuenta bloqueada por seguridad. Podrás intentar nuevamente en {$minutosRestantes} minuto(s).",
             ]);
         }
 
+        // Si el bloqueo temporal ya expiró, solo se limpia la ventana de tiempo;
+        // el contador de intentos se mantiene hasta un inicio de sesión exitoso.
+        if ($usuario->bloqueado_hasta && now()->greaterThanOrEqualTo($usuario->bloqueado_hasta)) {
+            $usuario->bloqueado_hasta = null;
+            $usuario->intentos_fallidos = 0;
+            $usuario->save();
+        }
+
         // Verificar contraseña
         if (!Hash::check($request->password, $usuario->password)) {
-            $usuario->increment('intentos_fallidos');
-            $restantes = 5 - $usuario->intentos_fallidos;
+            $quedoBloqueada = $usuario->registrarIntentoFallido();
 
-            if ($restantes <= 0) {
-                $usuario->bloqueado_hasta = now()->addMinutes(15);
-                $usuario->save();
+            if ($quedoBloqueada) {
+                $duracion = UsuarioModel::DURACIONES_BLOQUEO[$usuario->nivel_bloqueo] ?? null;
 
-                BitacoraService::registrar('BLOQUEO_SEGURIDAD', 'Seguridad', "Cuenta bloqueada por 15 minutos tras 5 fallos consecutivos: {$usuario->username}", $usuario->id);
+                $detalle = $duracion
+                    ? "Cuenta bloqueada por {$duracion} minutos (nivel {$usuario->nivel_bloqueo}) tras " . UsuarioModel::MAX_INTENTOS . " fallos consecutivos: {$usuario->username}"
+                    : "Cuenta bloqueada permanentemente (nivel 3) tras reincidencia de fallos: {$usuario->username}";
 
-                return back()->withErrors([
-                    $inputKey => 'Has superado el límite de 5 intentos fallidos. Tu cuenta ha sido bloqueada temporalmente por 15 minutos.',
-                ]);
+                BitacoraService::registrar('BLOQUEO_SEGURIDAD', 'Seguridad', $detalle, $usuario->id);
+
+                $mensaje = $duracion
+                    ? "Has superado el límite de " . UsuarioModel::MAX_INTENTOS . " intentos fallidos. Tu cuenta ha sido bloqueada por {$duracion} minutos (nivel de bloqueo {$usuario->nivel_bloqueo})."
+                    : 'Tu cuenta ha sido bloqueada permanentemente por reiterados intentos fallidos. Contacta al administrador.';
+
+                return back()->withErrors([$inputKey => $mensaje]);
             }
 
-            $usuario->save();
-            BitacoraService::registrar('PASSWORD_INCORRECTO', 'Seguridad', "Fallo de contraseña ({$usuario->intentos_fallidos}/5): {$usuario->username}", $usuario->id);
+            $restantes = $usuario->intentosRestantes();
+            BitacoraService::registrar('PASSWORD_INCORRECTO', 'Seguridad', "Fallo de contraseña ({$usuario->intentos_fallidos}/" . UsuarioModel::MAX_INTENTOS . "): {$usuario->username}", $usuario->id);
 
             return back()->withErrors([
                 $inputKey => "Contraseña incorrecta. Te quedan {$restantes} intento(s) antes del bloqueo.",
             ]);
         }
 
-        // Autenticación exitosa: reiniciar contadores
-        $usuario->intentos_fallidos = 0;
-        $usuario->bloqueado_hasta = null;
-        $usuario->save();
+        // Autenticación exitosa: limpiar contadores, registrar acceso y sesión única
+        $usuario->registrarAccesoExitoso();
 
         Auth::login($usuario, $request->boolean('remember'));
         $request->session()->regenerate();
+        $request->session()->put('session_token', $usuario->session_token);
 
         BitacoraService::registrar('INICIO_SESION', 'Seguridad', "Inicio de sesión exitoso. Rol: {$usuario->rol->nombre}", $usuario->id);
 
@@ -102,6 +120,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         if ($user) {
+            $user->revocarSesion();
             BitacoraService::registrar('CIERRE_SESION', 'Seguridad', 'Cierre de sesión voluntario', $user->id);
         }
 

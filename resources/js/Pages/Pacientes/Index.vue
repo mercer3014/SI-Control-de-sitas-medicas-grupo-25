@@ -1,303 +1,318 @@
 <template>
   <AppLayout>
-    <template #header>
-      <span>Pacientes</span>
-    </template>
+    <template #header>Pacientes</template>
 
-    <div class="space-y-4">
-      <!-- Barra Superior: Filtros y Registro -->
-      <div class="bg-white p-3.5 rounded border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-          <!-- Buscador -->
-          <div class="relative w-full sm:w-64">
-            <input 
-              v-model="search" 
-              type="text" 
-              placeholder="Buscar por CI, nombre, apellido..." 
-              class="w-full pl-8 pr-3 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none"
-              @keyup.enter="handleSearch"
-            />
-            <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-
-          <!-- Filtro Grupo Sanguíneo -->
-          <select 
-            v-model="selectedSangre" 
-            class="px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none"
-            @change="handleSearch"
-          >
-            <option value="">Tipo de sangre</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-          </select>
-
-          <!-- Filtro Estado -->
-          <select 
-            v-model="selectedEstado" 
-            class="px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none"
-            @change="handleSearch"
-          >
-            <option value="">Todos los estados</option>
-            <option value="1">Activos</option>
-            <option value="0">Inactivos</option>
-          </select>
-        </div>
-
-        <button 
+    <PageHeader
+      title="Gestión de Pacientes"
+      description="Filiación clínica, datos de emergencia y administración del padrón de pacientes."
+      :breadcrumbs="[{ label: 'Catálogos' }, { label: 'Pacientes' }]"
+    >
+      <template #actions>
+        <button
+          type="button"
           @click="openCreateModal"
-          class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold shadow-xs transition cursor-pointer"
+          class="btn-clinica bg-brand-600 text-white shadow-sm hover:bg-brand-700"
         >
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Registrar Paciente</span>
+          <AppIcon name="plus" class="h-4 w-4" :stroke-width="2.2" />
+          Registrar Paciente
         </button>
-      </div>
+      </template>
+    </PageHeader>
 
-      <!-- Tabla de Pacientes -->
-      <div class="bg-white rounded border border-slate-200 shadow-xs overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse">
+    <!-- Filtros -->
+    <FilterBar
+      v-model:search="search"
+      search-placeholder="Buscar por CI, nombre, apellido o teléfono…"
+      :has-filters="!!(search || selectedSangre || selectedEstado !== '')"
+      @apply="handleSearch"
+      @clear="clearFilters"
+    >
+      <select v-model="selectedSangre" class="input-clinica w-auto" @change="handleSearch">
+        <option value="">Tipo de sangre</option>
+        <option v-for="t in tiposSangre" :key="t" :value="t">{{ t }}</option>
+      </select>
+
+      <select v-model="selectedEstado" class="input-clinica w-auto" @change="handleSearch">
+        <option value="">Todos los estados</option>
+        <option value="1">Activos</option>
+        <option value="0">Inactivos</option>
+      </select>
+    </FilterBar>
+
+    <!-- Tabla -->
+    <div class="overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-card animate-fade-up">
+      <div class="overflow-x-auto">
+        <table class="table-clinica w-full">
           <thead>
-            <tr class="bg-slate-100/80 border-b border-slate-200 text-slate-700 font-semibold uppercase text-[11px] tracking-wider">
-              <th class="py-2.5 px-3">Paciente / Documento</th>
-              <th class="py-2.5 px-3">Contacto</th>
-              <th class="py-2.5 px-3">Grupo Sanguíneo</th>
-              <th class="py-2.5 px-3">Contacto de Emergencia</th>
-              <th class="py-2.5 px-3 text-center">Estado</th>
-              <th class="py-2.5 px-3 text-right">Acciones</th>
+            <tr>
+              <th>Paciente</th>
+              <th>Contacto</th>
+              <th>Grupo sanguíneo</th>
+              <th>Contacto de emergencia</th>
+              <th class="text-center">Estado</th>
+              <th class="text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr 
-              v-for="p in pacientes.data" 
-              :key="p.id"
-              class="hover:bg-slate-50 transition"
-            >
-              <td class="py-2.5 px-3">
-                <span class="font-semibold text-slate-900 block">{{ p.persona?.nombre_completo }}</span>
-                <span class="text-[11px] text-slate-500 font-mono">CI: {{ p.persona?.ci }} &bull; {{ p.persona?.genero === 'M' ? 'Masc' : (p.persona?.genero === 'F' ? 'Fem' : 'Otro') }}</span>
+          <tbody>
+            <tr v-for="p in pacientes.data" :key="p.id">
+              <td>
+                <div class="flex items-center gap-3">
+                  <Avatar :name="p.persona?.nombre_completo || 'P'" size="sm" />
+                  <div class="min-w-0">
+                    <Link :href="`/pacientes/${p.id}`" class="block truncate font-semibold text-stone-900 hover:text-brand-700 transition">
+                      {{ p.persona?.nombre_completo }}
+                    </Link>
+                    <span class="text-[12px] text-stone-400">
+                      CI {{ p.persona?.ci }} · {{ generoLabel(p.persona?.genero) }}<template v-if="p.persona?.edad != null"> · {{ p.persona.edad }} años</template>
+                    </span>
+                  </div>
+                </div>
               </td>
-              <td class="py-2.5 px-3 text-slate-600">
-                <span class="block">{{ p.persona?.telefono || 'Sin teléfono' }}</span>
-                <span class="text-[11px] text-slate-400 block truncate max-w-xs">{{ p.persona?.direccion || 'Sin dirección' }}</span>
+              <td>
+                <span class="block text-stone-700">{{ p.persona?.telefono || 'Sin teléfono' }}</span>
+                <span class="block max-w-[220px] truncate text-[12px] text-stone-400">{{ p.persona?.direccion || 'Sin dirección' }}</span>
               </td>
-              <td class="py-2.5 px-3">
-                <span 
+              <td>
+                <span
                   v-if="p.tipo_sangre"
-                  class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-50 text-rose-700 border border-rose-200"
+                  class="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 font-mono text-[11.5px] font-bold text-rose-700 ring-1 ring-inset ring-rose-600/15"
                 >
-                  {{ p.tipo_sangre }}
+                  <AppIcon name="blood" class="h-3 w-3" />{{ p.tipo_sangre }}
                 </span>
-                <span v-else class="text-slate-400 italic text-[11px]">No registrado</span>
+                <span v-else class="text-[12px] italic text-stone-400">No registrado</span>
               </td>
-              <td class="py-2.5 px-3 text-slate-600">
-                <span class="block font-medium">{{ p.contacto_emergencia_nombre || 'Sin contacto' }}</span>
-                <span class="text-[11px] text-slate-400 font-mono" v-if="p.contacto_emergencia_telefono">{{ p.contacto_emergencia_telefono }}</span>
+              <td>
+                <span class="block font-medium text-stone-700">{{ p.contacto_emergencia_nombre || '—' }}</span>
+                <span v-if="p.contacto_emergencia_telefono" class="text-[12px] text-stone-400">{{ p.contacto_emergencia_telefono }}</span>
               </td>
-              <td class="py-2.5 px-3 text-center">
-                <span class="inline-flex items-center gap-1.5 text-xs text-slate-700">
-                  <span class="w-2 h-2 rounded-full" :class="p.estado ? 'bg-emerald-500' : 'bg-slate-300'"></span>
-                  <span>{{ p.estado ? 'Activo' : 'Inactivo' }}</span>
-                </span>
+              <td class="text-center">
+                <StatusBadge
+                  :label="p.estado ? 'Activo' : 'Inactivo'"
+                  :variant="p.estado ? 'success' : 'neutral'"
+                  :pulse="p.estado"
+                />
               </td>
-              <td class="py-2.5 px-3 text-right">
+              <td class="text-right">
                 <div class="inline-flex items-center gap-1">
-                  <Link 
+                  <Link
                     :href="`/pacientes/${p.id}`"
-                    class="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded transition"
+                    class="rounded-lg p-2 text-stone-400 transition hover:bg-brand-50 hover:text-brand-600"
                     title="Ver ficha clínica"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    <AppIcon name="eye" class="h-[18px] w-[18px]" />
                   </Link>
-                  <button 
-                    @click="openEditModal(p)" 
-                    class="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded transition cursor-pointer"
+                  <button
+                    type="button"
+                    @click="openEditModal(p)"
+                    class="rounded-lg p-2 text-stone-400 transition hover:bg-sky-50 hover:text-sky-600 cursor-pointer"
                     title="Editar paciente"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
+                    <AppIcon name="pencil" class="h-[18px] w-[18px]" />
                   </button>
-                  <button 
-                    @click="confirmToggle(p)" 
-                    class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 bg-white transition cursor-pointer hover:bg-slate-100"
-                    :class="p.estado ? 'text-slate-500 hover:text-rose-600' : 'text-slate-500 hover:text-emerald-600'"
-                    :title="p.estado ? 'Desactivar paciente' : 'Activar paciente'"
+                  <button
+                    type="button"
+                    @click="confirmToggle(p)"
+                    class="rounded-lg p-2 transition cursor-pointer"
+                    :class="p.estado ? 'text-stone-400 hover:bg-amber-50 hover:text-amber-600' : 'text-stone-400 hover:bg-emerald-50 hover:text-emerald-600'"
+                    :title="p.estado ? 'Desactivar paciente' : 'Reactivar paciente'"
                   >
-                    <svg v-if="p.estado" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                    </svg>
-                    <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <AppIcon :name="p.estado ? 'ban' : 'check-circle'" class="h-[18px] w-[18px]" />
+                  </button>
+                  <button
+                    type="button"
+                    @click="confirmDelete(p)"
+                    class="rounded-lg p-2 text-stone-400 transition hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                    title="Eliminar paciente"
+                  >
+                    <AppIcon name="trash" class="h-[18px] w-[18px]" />
                   </button>
                 </div>
               </td>
             </tr>
-
-            <tr v-if="pacientes.data.length === 0">
-              <td colspan="6" class="py-8 text-center text-xs text-slate-500">
-                No se encontraron pacientes registrados con los filtros aplicados.
-              </td>
-            </tr>
           </tbody>
         </table>
+
+        <EmptyState
+          v-if="pacientes.data.length === 0"
+          icon="users"
+          title="No se encontraron pacientes"
+          message="Prueba ajustando los filtros de búsqueda o registra un nuevo paciente."
+        >
+          <button type="button" @click="openCreateModal" class="btn-clinica bg-brand-600 text-white hover:bg-brand-700">
+            <AppIcon name="plus" class="h-4 w-4" :stroke-width="2.2" />
+            Registrar Paciente
+          </button>
+        </EmptyState>
       </div>
 
-      <!-- Paginación -->
-      <div v-if="pacientes.links.length > 3" class="flex justify-end gap-1 text-xs">
-        <Link 
-          v-for="(link, i) in pacientes.links" 
-          :key="i"
-          :href="link.url || '#'"
-          :class="[
-            'px-2.5 py-1 rounded border',
-            link.active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50',
-            !link.url ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
-          ]"
-          v-html="link.label"
-        />
-      </div>
+      <Pagination :paginator="pacientes" />
     </div>
 
-    <!-- Modal Formulario Paciente -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <div class="bg-white rounded-lg shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div class="px-5 py-3.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-slate-800">
-            {{ isEditing ? 'Editar Datos del Paciente' : 'Registrar Nuevo Paciente' }}
-          </h3>
-          <button @click="showModal = false" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">&times;</button>
-        </div>
-
-        <form @submit.prevent="savePaciente" class="p-5 space-y-3.5 max-h-[85vh] overflow-y-auto">
-          <!-- Datos Personales -->
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">CI / Documento de Identidad *</label>
-              <input v-model="form.ci" type="text" required placeholder="Número de CI" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
-              <p v-if="form.errors.ci" class="text-[10px] text-rose-600 mt-0.5">{{ form.errors.ci }}</p>
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">Tipo de Sangre</label>
-              <select v-model="form.tipo_sangre" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none">
-                <option value="">Selecciona tipo</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-              </select>
-            </div>
+    <!-- Modal: Formulario de paciente -->
+    <Modal
+      :show="showModal"
+      :title="isEditing ? 'Editar datos del paciente' : 'Registrar nuevo paciente'"
+      :subtitle="isEditing ? 'Actualiza la filiación clínica' : 'Completa la ficha de filiación clínica'"
+      icon="user-plus"
+      size="lg"
+      @close="showModal = false"
+    >
+      <form id="form-paciente" @submit.prevent="savePaciente" class="space-y-5">
+        <!-- Datos personales -->
+        <section>
+          <h4 class="mb-3 flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-stone-400">
+            <AppIcon name="id-card" class="h-4 w-4" /> Datos personales
+          </h4>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField label="CI / Documento de identidad" :error="form.errors.ci" required>
+              <template #default="{ inputClass }">
+                <input v-model="form.ci" type="text" placeholder="Número de CI" :class="inputClass" />
+              </template>
+            </FormField>
+            <FormField label="Tipo de sangre" :error="form.errors.tipo_sangre" optional>
+              <template #default="{ inputClass }">
+                <select v-model="form.tipo_sangre" :class="inputClass">
+                  <option value="">Selecciona tipo</option>
+                  <option v-for="t in tiposSangre" :key="t" :value="t">{{ t }}</option>
+                </select>
+              </template>
+            </FormField>
+            <FormField label="Nombres" :error="form.errors.nombres" required>
+              <template #default="{ inputClass }">
+                <input v-model="form.nombres" type="text" placeholder="Nombres del paciente" :class="inputClass" />
+              </template>
+            </FormField>
+            <FormField label="Apellidos" :error="form.errors.apellidos" required>
+              <template #default="{ inputClass }">
+                <input v-model="form.apellidos" type="text" placeholder="Apellidos del paciente" :class="inputClass" />
+              </template>
+            </FormField>
+            <FormField label="Fecha de nacimiento" :error="form.errors.fecha_nacimiento" required>
+              <template #default="{ inputClass }">
+                <input v-model="form.fecha_nacimiento" type="date" :class="inputClass" />
+              </template>
+            </FormField>
+            <FormField label="Género" :error="form.errors.genero" required>
+              <template #default="{ inputClass }">
+                <select v-model="form.genero" :class="inputClass">
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                  <option value="O">Otro</option>
+                </select>
+              </template>
+            </FormField>
+            <FormField label="Teléfono" :error="form.errors.telefono" optional>
+              <template #default="{ inputClass }">
+                <input v-model="form.telefono" type="text" placeholder="Celular de contacto" :class="inputClass" />
+              </template>
+            </FormField>
+            <FormField label="Dirección de domicilio" :error="form.errors.direccion" optional>
+              <template #default="{ inputClass }">
+                <input v-model="form.direccion" type="text" placeholder="Zona, calle y número" :class="inputClass" />
+              </template>
+            </FormField>
           </div>
+        </section>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">Nombres *</label>
-              <input v-model="form.nombres" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">Apellidos *</label>
-              <input v-model="form.apellidos" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
-            </div>
+        <!-- Contacto de emergencia -->
+        <section class="rounded-xl border border-stone-200 bg-stone-50/60 p-4">
+          <h4 class="mb-3 flex items-center gap-2 text-[12px] font-bold uppercase tracking-wide text-stone-400">
+            <AppIcon name="phone" class="h-4 w-4" /> Contacto de emergencia
+          </h4>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField label="Nombre completo" :error="form.errors.contacto_emergencia_nombre" optional>
+              <template #default="{ inputClass }">
+                <input v-model="form.contacto_emergencia_nombre" type="text" placeholder="Familiar o apoderado" :class="inputClass" />
+              </template>
+            </FormField>
+            <FormField label="Teléfono de emergencia" :error="form.errors.contacto_emergencia_telefono" optional>
+              <template #default="{ inputClass }">
+                <input v-model="form.contacto_emergencia_telefono" type="text" placeholder="Teléfono de contacto" :class="inputClass" />
+              </template>
+            </FormField>
           </div>
+        </section>
 
-          <div class="grid grid-cols-3 gap-3">
-            <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">Fecha Nacimiento *</label>
-              <input v-model="form.fecha_nacimiento" type="date" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">Género *</label>
-              <select v-model="form.genero" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none">
-                <option value="M">Masculino (M)</option>
-                <option value="F">Femenino (F)</option>
-                <option value="O">Otro (O)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">Teléfono</label>
-              <input v-model="form.telefono" type="text" placeholder="Celular" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
-            </div>
-          </div>
+        <!-- Antecedentes (solo alta) -->
+        <section v-if="!isEditing">
+          <FormField
+            label="Antecedentes clínicos / alergias"
+            :error="form.errors.antecedentes"
+            optional
+            hint="Enfermedades crónicas, alergias a medicamentos, cirugías previas…"
+          >
+            <template #default="{ inputClass }">
+              <textarea v-model="form.antecedentes" rows="3" :class="inputClass" placeholder="Describe los antecedentes relevantes del paciente"></textarea>
+            </template>
+          </FormField>
+        </section>
+      </form>
 
-          <div>
-            <label class="block text-[11px] font-medium text-slate-700 mb-1">Dirección de Domicilio</label>
-            <input v-model="form.direccion" type="text" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
-          </div>
+      <template #footer>
+        <button type="button" @click="showModal = false" class="btn-clinica border border-stone-300 bg-white text-stone-700 hover:bg-stone-50">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          form="form-paciente"
+          :disabled="form.processing"
+          class="btn-clinica bg-brand-600 text-white hover:bg-brand-700"
+        >
+          <AppIcon name="check" class="h-4 w-4" :stroke-width="2.2" />
+          {{ form.processing ? 'Guardando…' : (isEditing ? 'Guardar cambios' : 'Registrar paciente') }}
+        </button>
+      </template>
+    </Modal>
 
-          <!-- Contacto de Emergencia -->
-          <hr class="border-slate-200 my-2" />
-          <h4 class="text-xs font-semibold text-slate-800">Contacto de Emergencia</h4>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">Nombre Completo del Contacto</label>
-              <input v-model="form.contacto_emergencia_nombre" type="text" placeholder="Familiar o apoderado" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">Teléfono de Emergencia</label>
-              <input v-model="form.contacto_emergencia_telefono" type="text" placeholder="Teléfono de contacto" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
-            </div>
-          </div>
-
-          <!-- Antecedentes Médicos (Solo en alta) -->
-          <div v-if="!isEditing">
-            <label class="block text-[11px] font-medium text-slate-700 mb-1">Antecedentes Clínicos / Alergias (Opcional)</label>
-            <textarea v-model="form.antecedentes" rows="2" placeholder="Enfermedades crónicas, alergias a medicamentos, etc." class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none"></textarea>
-          </div>
-
-          <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 -mx-5 -mb-5 flex justify-end gap-2.5 mt-4">
-            <button type="button" @click="showModal = false" class="px-4 py-1.5 text-xs text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-100 cursor-pointer">
-              Cancelar
-            </button>
-            <button type="submit" :disabled="form.processing" class="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded shadow-xs cursor-pointer">
-              {{ isEditing ? 'Guardar Cambios' : 'Registrar Paciente' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Diálogo Modal Central de Confirmación para Bajas Lógicas -->
+    <!-- Confirmación de estado -->
     <DialogModal
       :show="showConfirmModal"
-      :title="pacienteToToggle?.estado ? 'Desactivar Paciente' : 'Activar Paciente'"
-      :message="pacienteToToggle?.estado 
-        ? `¿Confirmas la desactivación del paciente ${pacienteToToggle?.persona?.nombre_completo}? No podrá agendar nuevas citas mientras esté inactivo.` 
-        : `¿Confirmas la reactivación del paciente ${pacienteToToggle?.persona?.nombre_completo}?`"
-      confirm-text="Confirmar"
+      :title="pacienteToToggle?.estado ? 'Desactivar paciente' : 'Reactivar paciente'"
+      :message="pacienteToToggle?.estado
+        ? `¿Confirmas la desactivación de ${pacienteToToggle?.persona?.nombre_completo}?`
+        : `¿Confirmas la reactivación de ${pacienteToToggle?.persona?.nombre_completo}?`"
+      :confirm-text="pacienteToToggle?.estado ? 'Desactivar' : 'Reactivar'"
       cancel-text="Cancelar"
-      :type="pacienteToToggle?.estado ? 'danger' : 'info'"
+      :type="pacienteToToggle?.estado ? 'warning' : 'brand'"
       @confirm="executeToggle"
       @close="showConfirmModal = false"
+    />
+
+    <!-- Confirmación de eliminación -->
+    <DialogModal
+      :show="showDeleteModal"
+      title="Eliminar paciente"
+      :message="`¿Estás seguro de que deseas eliminar al paciente ${pacienteToDelete?.persona?.nombre_completo}?`"
+      confirm-text="Eliminar"
+      cancel-text="Cancelar"
+      type="danger"
+      @confirm="executeDelete"
+      @close="showDeleteModal = false"
     />
   </AppLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { router, useForm, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import PageHeader from '@/Components/PageHeader.vue';
+import FilterBar from '@/Components/FilterBar.vue';
+import Modal from '@/Components/Modal.vue';
 import DialogModal from '@/Components/DialogModal.vue';
+import FormField from '@/Components/FormField.vue';
+import StatusBadge from '@/Components/StatusBadge.vue';
+import EmptyState from '@/Components/EmptyState.vue';
+import Pagination from '@/Components/Pagination.vue';
+import Avatar from '@/Components/Avatar.vue';
+import AppIcon from '@/Components/AppIcon.vue';
 
 const props = defineProps({
   pacientes: Object,
   filters: Object,
 });
+
+const tiposSangre = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
 
 const search = ref(props.filters?.buscar || '');
 const selectedSangre = ref(props.filters?.tipo_sangre || '');
@@ -309,6 +324,9 @@ const editingId = ref(null);
 
 const showConfirmModal = ref(false);
 const pacienteToToggle = ref(null);
+
+const showDeleteModal = ref(false);
+const pacienteToDelete = ref(null);
 
 const form = useForm({
   ci: '',
@@ -327,11 +345,27 @@ const form = useForm({
 
 const handleSearch = () => {
   router.get('/pacientes', {
-    buscar: search.value,
-    tipo_sangre: selectedSangre.value,
-    estado: selectedEstado.value,
-  }, { preserveState: true });
+    buscar: search.value || undefined,
+    tipo_sangre: selectedSangre.value || undefined,
+    estado: selectedEstado.value !== '' ? selectedEstado.value : undefined,
+  }, { preserveState: true, replace: true });
 };
+
+// Búsqueda automática con debounce
+let debounceTimer = null;
+watch(search, () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(handleSearch, 450);
+});
+
+const clearFilters = () => {
+  search.value = '';
+  selectedSangre.value = '';
+  selectedEstado.value = '';
+  handleSearch();
+};
+
+const generoLabel = (g) => (g === 'M' ? 'Masculino' : g === 'F' ? 'Femenino' : 'Otro');
 
 const openCreateModal = () => {
   isEditing.value = false;
@@ -360,14 +394,11 @@ const openEditModal = (p) => {
 };
 
 const savePaciente = () => {
+  const options = { onSuccess: () => { showModal.value = false; } };
   if (isEditing.value) {
-    form.put(`/pacientes/${editingId.value}`, {
-      onSuccess: () => { showModal.value = false; },
-    });
+    form.put(`/pacientes/${editingId.value}`, options);
   } else {
-    form.post('/pacientes', {
-      onSuccess: () => { showModal.value = false; },
-    });
+    form.post('/pacientes', options);
   }
 };
 
@@ -382,7 +413,22 @@ const executeToggle = () => {
     onFinish: () => {
       showConfirmModal.value = false;
       pacienteToToggle.value = null;
-    }
+    },
+  });
+};
+
+const confirmDelete = (p) => {
+  pacienteToDelete.value = p;
+  showDeleteModal.value = true;
+};
+
+const executeDelete = () => {
+  if (!pacienteToDelete.value) return;
+  router.delete(`/pacientes/${pacienteToDelete.value.id}`, {
+    onFinish: () => {
+      showDeleteModal.value = false;
+      pacienteToDelete.value = null;
+    },
   });
 };
 </script>

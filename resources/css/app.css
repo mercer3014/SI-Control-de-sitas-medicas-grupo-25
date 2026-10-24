@@ -6,33 +6,239 @@
 @source '../**/*.js';
 @source '../**/*.vue';
 
+/*
+ * ==========================================================================
+ * SISTEMA DE DISEÑO — CLÍNICA VIDA SALUD
+ * Dirección: "Serenidad clínica profesional"
+ *   - Primario: teal profundo (salud, calma, confianza)
+ *   - Neutros: stone cálido (aleja el look "template de IA" del slate frío)
+ *   - Superficies blancas con bordes suaves y sombras discretas
+ * ==========================================================================
+ */
 @theme {
     --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --color-clinica-navy: #0F2942;
-    --color-clinica-blue: #2563EB;
-    --color-clinica-teal: #0D9488;
-    --color-clinica-slate: #0F172A;
+
+    /* Marca (escala teal) */
+    --color-brand-50:  #effaf8;
+    --color-brand-100: #d7f2ee;
+    --color-brand-200: #b0e5de;
+    --color-brand-300: #7dd1c8;
+    --color-brand-400: #45b5ab;
+    --color-brand-500: #289a91;
+    --color-brand-600: #1e7d76;
+    --color-brand-700: #1c6560;
+    --color-brand-800: #1a514d;
+    --color-brand-900: #194441;
+    --color-brand-950: #092725;
+
+    /* Superficie / fondos */
+    --color-surface: #fafaf9;
+    --color-sidebar: #0c1a19;
+    --color-sidebar-deep: #081211;
+
+    /* Sombras de tarjeta */
+    --shadow-card: 0 1px 2px 0 rgb(9 39 37 / 0.04), 0 1px 3px 0 rgb(9 39 37 / 0.05);
+    --shadow-card-hover: 0 4px 12px -2px rgb(9 39 37 / 0.10), 0 2px 6px -2px rgb(9 39 37 / 0.06);
+    --shadow-modal: 0 20px 50px -12px rgb(9 39 37 / 0.28);
+
+    /* Radios */
+    --radius-xl: 0.875rem;
 }
 
-/* Custom styling for compact, high-efficiency data density */
 body {
     font-family: var(--font-sans);
-    color: #1e293b;
-    background-color: #f8fafc;
+    color: #1c1917;
+    background-color: var(--color-surface);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+/* --------------------------------------------------------------------------
+ * Scrollbar
+ * ------------------------------------------------------------------------ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* --------------------------------------------------------------------------
+ * Animaciones del sistema
+ * ------------------------------------------------------------------------ */
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-::-webkit-scrollbar-track {
-    background: #f1f5f9;
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
-::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
+
+@keyframes scale-in {
+    from { opacity: 0; transform: scale(0.96) translateY(6px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
 }
-::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+
+@keyframes slide-in-right {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
 }
+
+@keyframes shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+}
+
+@keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+}
+
+.animate-fade-up { animation: fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-in { animation: fade-in 0.25s ease-out both; }
+.animate-scale-in { animation: scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-slide-in-right { animation: slide-in-right 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Retrasos escalonados para listas y tarjetas */
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger > *:nth-child(3) { animation-delay: 0.10s; }
+.stagger > *:nth-child(4) { animation-delay: 0.14s; }
+.stagger > *:nth-child(5) { animation-delay: 0.18s; }
+.stagger > *:nth-child(6) { animation-delay: 0.22s; }
+.stagger > *:nth-child(7) { animation-delay: 0.26s; }
+.stagger > *:nth-child(8) { animation-delay: 0.30s; }
+
+/* Skeleton de carga */
+.skeleton {
+    background: linear-gradient(110deg, #e7e5e4 8%, #f5f5f4 18%, #e7e5e4 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+    border-radius: 0.5rem;
+}
+
+/* Punto de estado con pulso suave */
+.dot-pulse { animation: pulse-soft 2.2s ease-in-out infinite; }
+
+/* --------------------------------------------------------------------------
+ * Transición de página (Inertia)
+ * ------------------------------------------------------------------------ */
+.page-enter-active { transition: opacity 0.22s ease-out, transform 0.22s ease-out; }
+.page-enter-from { opacity: 0; transform: translateY(6px); }
+.page-leave-active { transition: opacity 0.12s ease-in; }
+.page-leave-to { opacity: 0; }
+
+/* --------------------------------------------------------------------------
+ * Transiciones de modales
+ * ------------------------------------------------------------------------ */
+.modal-enter-active { transition: opacity 0.22s ease-out; }
+.modal-enter-active .modal-panel { transition: opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1), transform 0.24s cubic-bezier(0.22, 1, 0.36, 1); }
+.modal-leave-active { transition: opacity 0.16s ease-in; }
+.modal-leave-active .modal-panel { transition: opacity 0.14s ease-in, transform 0.14s ease-in; }
+.modal-enter-from, .modal-leave-to { opacity: 0; }
+.modal-enter-from .modal-panel { opacity: 0; transform: scale(0.96) translateY(10px); }
+.modal-leave-to .modal-panel { opacity: 0; transform: scale(0.98) translateY(6px); }
+
+/* --------------------------------------------------------------------------
+ * Transiciones de toasts
+ * ------------------------------------------------------------------------ */
+.toast-enter-active { transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+.toast-leave-active { transition: all 0.2s ease-in; position: absolute; }
+.toast-enter-from { opacity: 0; transform: translateX(32px) scale(0.97); }
+.toast-leave-to { opacity: 0; transform: translateY(-8px) scale(0.97); }
+.toast-move { transition: transform 0.25s ease; }
+
+/* --------------------------------------------------------------------------
+ * Elementos base
+ * ------------------------------------------------------------------------ */
+:focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+::selection {
+    background: var(--color-brand-100);
+    color: var(--color-brand-900);
+}
+
+/* Tabla base densa pero respirable */
+.table-clinica th {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #78716c;
+    text-align: left;
+    padding: 10px 16px;
+    background: #fafaf9;
+    border-bottom: 1px solid #e7e5e4;
+    white-space: nowrap;
+}
+
+.table-clinica td {
+    padding: 13px 16px;
+    font-size: 13.5px;
+    color: #292524;
+    border-bottom: 1px solid #f5f5f4;
+    vertical-align: middle;
+}
+
+.table-clinica tbody tr {
+    transition: background-color 0.12s ease;
+}
+
+.table-clinica tbody tr:hover {
+    background: #fbfaf9;
+}
+
+.table-clinica tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Inputs base */
+.input-clinica {
+    width: 100%;
+    border-radius: 0.625rem;
+    border: 1px solid #d6d3d1;
+    background: #fff;
+    padding: 0.5rem 0.75rem;
+    font-size: 13.5px;
+    color: #1c1917;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input-clinica::placeholder { color: #a8a29e; }
+
+.input-clinica:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 3px rgb(40 154 145 / 0.14);
+}
+
+.input-clinica.input-error {
+    border-color: #f43f5e;
+}
+
+.input-clinica.input-error:focus {
+    box-shadow: 0 0 0 3px rgb(244 63 94 / 0.12);
+}
+
+/* Botones base */
+.btn-clinica {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.625rem;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-clinica:active { transform: translateY(1px) scale(0.99); }
+.btn-clinica:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }

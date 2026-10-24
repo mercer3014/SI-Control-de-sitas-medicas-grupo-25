@@ -126,10 +126,11 @@
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                   </button>
+                  <!-- Desactivar / Activar -->
                   <button 
                     @click="confirmToggle(m)" 
                     class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 bg-white transition cursor-pointer hover:bg-slate-100"
-                    :class="m.estado ? 'text-slate-500 hover:text-rose-600' : 'text-slate-500 hover:text-emerald-600'"
+                    :class="m.estado ? 'text-slate-500 hover:text-amber-600' : 'text-slate-500 hover:text-emerald-600'"
                     :title="m.estado ? 'Desactivar médico' : 'Activar médico'"
                   >
                     <svg v-if="m.estado" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -137,6 +138,17 @@
                     </svg>
                     <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+
+                  <!-- Eliminar -->
+                  <button 
+                    @click="confirmDelete(m)" 
+                    class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 bg-white text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition cursor-pointer"
+                    title="Eliminar médico"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
@@ -281,18 +293,30 @@
       </div>
     </div>
 
-    <!-- Diálogo Modal Central de Confirmación para Bajas Lógicas -->
+    <!-- Diálogo Modal: Alternar Estado (Activar/Desactivar) -->
     <DialogModal
       :show="showConfirmModal"
       :title="medicoToToggle?.estado ? 'Desactivar Médico' : 'Activar Médico'"
       :message="medicoToToggle?.estado 
-        ? `¿Confirmas la desactivación del Dr(a). ${medicoToToggle?.persona?.nombre_completo}? No podrá recibir nuevas citas en la agenda.` 
+        ? `¿Confirmas la desactivación del Dr(a). ${medicoToToggle?.persona?.nombre_completo}?` 
         : `¿Confirmas la reactivación del Dr(a). ${medicoToToggle?.persona?.nombre_completo}?`"
       confirm-text="Confirmar"
       cancel-text="Cancelar"
-      :type="medicoToToggle?.estado ? 'danger' : 'info'"
+      :type="medicoToToggle?.estado ? 'warning' : 'brand'"
       @confirm="executeToggle"
       @close="showConfirmModal = false"
+    />
+
+    <!-- Diálogo Modal: Eliminar Médico -->
+    <DialogModal
+      :show="showDeleteModal"
+      title="Eliminar Médico"
+      :message="`¿Estás seguro de que deseas eliminar al Dr(a). ${medicoToDelete?.persona?.nombre_completo}?`"
+      confirm-text="Eliminar"
+      cancel-text="Cancelar"
+      type="danger"
+      @confirm="executeDelete"
+      @close="showDeleteModal = false"
     />
   </AppLayout>
 </template>
@@ -319,6 +343,9 @@ const editingId = ref(null);
 
 const showConfirmModal = ref(false);
 const medicoToToggle = ref(null);
+
+const showDeleteModal = ref(false);
+const medicoToDelete = ref(null);
 
 const form = useForm({
   ci: '',
@@ -417,6 +444,21 @@ const executeToggle = () => {
     onFinish: () => {
       showConfirmModal.value = false;
       medicoToToggle.value = null;
+    }
+  });
+};
+
+const confirmDelete = (m) => {
+  medicoToDelete.value = m;
+  showDeleteModal.value = true;
+};
+
+const executeDelete = () => {
+  if (!medicoToDelete.value) return;
+  router.delete(`/medicos/${medicoToDelete.value.id}`, {
+    onFinish: () => {
+      showDeleteModal.value = false;
+      medicoToDelete.value = null;
     }
   });
 };

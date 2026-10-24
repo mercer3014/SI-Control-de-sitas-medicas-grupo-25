@@ -1,158 +1,213 @@
 <template>
   <AppLayout>
-    <template #header>
-      <span>Panel General</span>
-    </template>
+    <template #header>Panel General</template>
 
-    <div class="space-y-5">
-      <!-- Tarjetas de Métricas Principales (KPIs Sobrios) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- KPI 1: Pacientes -->
-        <div class="p-4 bg-white rounded border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Pacientes</span>
-            <span class="block text-2xl font-bold text-slate-900 mt-1">{{ stats.total_pacientes }}</span>
-            <span class="block text-[11px] text-slate-400 mt-0.5">Catálogo clínico</span>
-          </div>
-          <div class="w-10 h-10 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          </div>
-        </div>
+    <!-- Saludo -->
+    <div class="mb-6 animate-fade-up">
+      <h1 class="text-[22px] font-bold tracking-tight text-stone-900">
+        {{ saludo }}, <span class="text-brand-700">{{ primerNombre }}</span>
+      </h1>
+      <p class="mt-1 text-[13.5px] text-stone-500">Este es el resumen operativo de la clínica al día de hoy.</p>
+    </div>
 
-        <!-- KPI 2: Médicos -->
-        <div class="p-4 bg-white rounded border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Médicos</span>
-            <span class="block text-2xl font-bold text-slate-900 mt-1">{{ stats.total_medicos }}</span>
-            <span class="block text-[11px] text-slate-400 mt-0.5">Profesionales activos</span>
-          </div>
-          <div class="w-10 h-10 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </div>
-        </div>
+    <!-- Tarjetas de métricas -->
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 stagger">
+      <StatCard
+        label="Pacientes"
+        :value="stats.total_pacientes"
+        icon="users"
+        tone="brand"
+        hint="Registrados y activos"
+        hint-dot="bg-brand-500"
+        href="/pacientes"
+      />
+      <StatCard
+        label="Médicos"
+        :value="stats.total_medicos"
+        icon="stethoscope"
+        tone="sky"
+        hint="Profesionales habilitados"
+        hint-dot="bg-sky-500"
+        href="/medicos"
+      />
+      <StatCard
+        label="Especialidades"
+        :value="stats.total_especialidades"
+        icon="clipboard-list"
+        tone="violet"
+        hint="Áreas de atención"
+        hint-dot="bg-violet-500"
+        href="/especialidades"
+      />
+      <StatCard
+        label="Usuarios"
+        :value="stats.total_usuarios"
+        icon="id-card"
+        tone="amber"
+        hint="Cuentas habilitadas"
+        hint-dot="bg-amber-500"
+        href="/usuarios"
+      />
+    </div>
 
-        <!-- KPI 3: Especialidades -->
-        <div class="p-4 bg-white rounded border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Especialidades</span>
-            <span class="block text-2xl font-bold text-slate-900 mt-1">{{ stats.total_especialidades }}</span>
-            <span class="block text-[11px] text-slate-400 mt-0.5">Áreas de atención</span>
+    <div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
+      <!-- Actividad reciente -->
+      <section class="xl:col-span-2 overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-card animate-fade-up">
+        <header class="flex items-center justify-between border-b border-stone-100 px-5 py-4">
+          <div class="flex items-center gap-2.5">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-100">
+              <AppIcon name="activity" class="h-4 w-4 text-brand-700" />
+            </div>
+            <div>
+              <h2 class="text-[14px] font-bold text-stone-800">Actividad reciente</h2>
+              <p class="text-[11.5px] text-stone-400">Últimos eventos registrados en la bitácora</p>
+            </div>
           </div>
-          <div class="w-10 h-10 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
-        </div>
+          <Link
+            href="/bitacora"
+            class="group flex items-center gap-1 text-[12.5px] font-semibold text-brand-600 hover:text-brand-700 transition"
+          >
+            Ver bitácora
+            <AppIcon name="arrow-right" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </header>
 
-        <!-- KPI 4: Usuarios -->
-        <div class="p-4 bg-white rounded border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Usuarios</span>
-            <span class="block text-2xl font-bold text-slate-900 mt-1">{{ stats.total_usuarios }}</span>
-            <span class="block text-[11px] text-slate-400 mt-0.5">Cuentas habilitadas</span>
-          </div>
-          <div class="w-10 h-10 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center font-bold">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cuadrícula Inferior: Bitácora y Pacientes Recientes -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <!-- Registro Reciente de Auditoría (Bitácora) -->
-        <div class="lg:col-span-2 bg-white rounded border border-slate-200 shadow-xs overflow-hidden">
-          <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Eventos Recientes en Bitácora</h3>
-            <Link :href="'/bitacora'" class="text-xs text-slate-600 hover:text-slate-900 font-medium">Ver todo &rarr;</Link>
-          </div>
-
-          <div class="divide-y divide-slate-100">
-            <div 
-              v-for="b in ultimasBitacoras" 
-              :key="b.id"
-              class="px-4 py-2.5 flex items-start justify-between text-xs hover:bg-slate-50 transition"
+        <ul v-if="ultimasBitacoras.length" class="divide-y divide-stone-100">
+          <li
+            v-for="evento in ultimasBitacoras"
+            :key="evento.id"
+            class="flex items-start gap-3.5 px-5 py-3.5 transition hover:bg-stone-50/70"
+          >
+            <div
+              class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+              :class="accionStyle(evento.accion).bg"
             >
-              <div>
-                <div class="flex items-center gap-2">
-                  <span class="font-mono text-[10px] font-semibold px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded border border-slate-200">
-                    {{ b.accion }}
-                  </span>
-                  <span class="text-slate-400 font-medium text-[11px]">[{{ b.modulo }}]</span>
-                </div>
-                <p class="text-slate-700 mt-1 text-[11px] leading-snug">{{ b.detalle || '-' }}</p>
-                <span class="text-[10px] text-slate-400 mt-0.5 block">
-                  Por: {{ b.usuario?.persona?.nombre_completo || b.usuario?.username || 'Sistema' }} &bull; IP: {{ b.ip_origen }}
+              <AppIcon :name="accionStyle(evento.accion).icon" class="h-4 w-4" :class="accionStyle(evento.accion).color" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded-md bg-stone-100 px-1.5 py-0.5 font-mono text-[10.5px] font-semibold text-stone-600">
+                  {{ evento.accion }}
                 </span>
+                <span class="text-[11.5px] font-medium text-stone-400">{{ evento.modulo }}</span>
               </div>
-              <span class="text-[10px] text-slate-400 font-mono shrink-0 ml-4">
-                {{ formatTime(b.fecha_hora) }}
-              </span>
+              <p class="mt-1 text-[13px] leading-snug text-stone-700">{{ evento.detalle }}</p>
+              <p class="mt-1 text-[11.5px] text-stone-400">
+                {{ evento.usuario?.persona?.nombre_completo || evento.usuario?.username || 'Sistema' }}
+                · IP {{ evento.ip_origen }}
+              </p>
             </div>
+            <time class="shrink-0 text-[11.5px] font-medium text-stone-400">{{ fechaCorta(evento.fecha_hora) }}</time>
+          </li>
+        </ul>
+        <EmptyState
+          v-else
+          icon="history"
+          title="Sin actividad registrada"
+          message="Aún no hay eventos en la bitácora del sistema."
+        />
+      </section>
 
-            <div v-if="ultimasBitacoras.length === 0" class="p-6 text-center text-xs text-slate-400">
-              No se han registrado eventos recientes en la bitácora.
+      <!-- Pacientes recientes -->
+      <section class="overflow-hidden rounded-2xl border border-stone-200/80 bg-white shadow-card animate-fade-up">
+        <header class="flex items-center justify-between border-b border-stone-100 px-5 py-4">
+          <div class="flex items-center gap-2.5">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100">
+              <AppIcon name="users" class="h-4 w-4 text-sky-700" />
             </div>
-          </div>
-        </div>
-
-        <!-- Pacientes Registrados Recientemente -->
-        <div class="bg-white rounded border border-slate-200 shadow-xs overflow-hidden">
-          <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Pacientes Recientes</h3>
-            <Link :href="'/pacientes'" class="text-xs text-slate-600 hover:text-slate-900 font-medium">Gestionar &rarr;</Link>
-          </div>
-
-          <div class="divide-y divide-slate-100">
-            <div 
-              v-for="p in ultimosPacientes" 
-              :key="p.id" 
-              class="px-4 py-2.5 flex items-center justify-between text-xs hover:bg-slate-50 transition"
-            >
-              <div>
-                <span class="font-semibold text-slate-800 block">{{ p.persona?.nombre_completo }}</span>
-                <span class="text-[11px] text-slate-400 font-mono">CI: {{ p.persona?.ci }} &bull; Sangre: {{ p.tipo_sangre || 'N/A' }}</span>
-              </div>
-              <span class="inline-flex items-center gap-1.5 text-xs text-slate-700">
-                <span class="w-1.5 h-1.5 rounded-full" :class="p.estado ? 'bg-emerald-500' : 'bg-slate-300'"></span>
-                <span class="text-[11px]">{{ p.estado ? 'Activo' : 'Inactivo' }}</span>
-              </span>
-            </div>
-
-            <div v-if="ultimosPacientes.length === 0" class="p-6 text-center text-xs text-slate-400">
-              Aún no hay pacientes registrados.
+            <div>
+              <h2 class="text-[14px] font-bold text-stone-800">Pacientes recientes</h2>
+              <p class="text-[11.5px] text-stone-400">Últimas filiaciones clínicas</p>
             </div>
           </div>
-        </div>
-      </div>
+          <Link
+            href="/pacientes"
+            class="group flex items-center gap-1 text-[12.5px] font-semibold text-brand-600 hover:text-brand-700 transition"
+          >
+            Gestionar
+            <AppIcon name="arrow-right" class="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </header>
+
+        <ul v-if="ultimosPacientes.length" class="divide-y divide-stone-100">
+          <li
+            v-for="paciente in ultimosPacientes"
+            :key="paciente.id"
+            class="flex items-center gap-3 px-5 py-3 transition hover:bg-stone-50/70"
+          >
+            <Avatar :name="paciente.persona?.nombre_completo || 'P'" size="sm" />
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-[13px] font-semibold text-stone-800">
+                {{ paciente.persona?.nombre_completo }}
+              </p>
+              <p class="text-[11.5px] text-stone-400">
+                CI: {{ paciente.persona?.ci }}
+                <template v-if="paciente.tipo_sangre"> · Sangre {{ paciente.tipo_sangre }}</template>
+              </p>
+            </div>
+            <StatusBadge
+              :label="paciente.estado ? 'Activo' : 'Inactivo'"
+              :variant="paciente.estado ? 'success' : 'neutral'"
+            />
+          </li>
+        </ul>
+        <EmptyState
+          v-else
+          icon="users"
+          title="Sin pacientes"
+          message="Cuando registres pacientes aparecerán aquí."
+        />
+      </section>
     </div>
   </AppLayout>
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import StatCard from '@/Components/StatCard.vue';
+import StatusBadge from '@/Components/StatusBadge.vue';
+import EmptyState from '@/Components/EmptyState.vue';
+import Avatar from '@/Components/Avatar.vue';
+import AppIcon from '@/Components/AppIcon.vue';
 
-defineProps({
-  stats: Object,
-  ultimasBitacoras: Array,
-  ultimosPacientes: Array,
+const props = defineProps({
+  stats: { type: Object, required: true },
+  ultimasBitacoras: { type: Array, default: () => [] },
+  ultimosPacientes: { type: Array, default: () => [] },
 });
 
-const formatTime = (dateString) => {
-  if (!dateString) return '-';
-  try {
-    const d = new Date(dateString.replace(' ', 'T'));
-    if (isNaN(d.getTime())) return dateString;
-    return d.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' });
-  } catch (e) {
-    return dateString;
-  }
+const page = usePage();
+
+const primerNombre = computed(() => {
+  const nombres = page.props.auth?.user?.persona?.nombres || page.props.auth?.user?.username || '';
+  return nombres.split(' ')[0];
+});
+
+const saludo = computed(() => {
+  const hora = new Date().getHours();
+  if (hora < 12) return 'Buenos días';
+  if (hora < 19) return 'Buenas tardes';
+  return 'Buenas noches';
+});
+
+const accionStyle = (accion = '') => {
+  if (accion.includes('SESION') || accion.includes('LOGIN')) return { bg: 'bg-emerald-100', color: 'text-emerald-700', icon: 'key' };
+  if (accion.includes('BLOQUEO') || accion.includes('DENEGADO')) return { bg: 'bg-rose-100', color: 'text-rose-700', icon: 'lock' };
+  if (accion.includes('PACIENTE')) return { bg: 'bg-sky-100', color: 'text-sky-700', icon: 'users' };
+  if (accion.includes('MEDICO')) return { bg: 'bg-violet-100', color: 'text-violet-700', icon: 'stethoscope' };
+  if (accion.includes('PASSWORD') || accion.includes('RECUPERACION')) return { bg: 'bg-amber-100', color: 'text-amber-700', icon: 'shield' };
+  return { bg: 'bg-stone-100', color: 'text-stone-600', icon: 'info' };
+};
+
+const fechaCorta = (fecha) => {
+  if (!fecha) return '';
+  const d = new Date(fecha);
+  const ahora = new Date();
+  const esHoy = d.toDateString() === ahora.toDateString();
+  const hora = d.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' });
+  if (esHoy) return `Hoy, ${hora}`;
+  return d.toLocaleDateString('es-BO', { day: '2-digit', month: 'short' }) + `, ${hora}`;
 };
 </script>

@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
 
     // MÓDULO 1: Seguridad, Acceso y Auditoría
     Route::middleware('role:Administrador')->group(function () {
+        Route::patch('usuarios/{usuario}/toggle', [UsuarioController::class, 'toggle'])->name('usuarios.toggle');
         Route::resource('usuarios', UsuarioController::class)->except(['create', 'edit', 'show']);
         Route::get('roles', [RolController::class, 'index'])->name('roles.index');
         Route::put('roles/{rol}', [RolController::class, 'update'])->name('roles.update');

@@ -14,7 +14,7 @@
               v-model="search" 
               type="text" 
               placeholder="Buscar por CI, nombre, usuario..." 
-              class="w-full pl-8 pr-3 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+              class="w-full pl-8 pr-3 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none"
               @keyup.enter="handleSearch"
             />
             <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -25,7 +25,7 @@
           <!-- Filtro Rol -->
           <select 
             v-model="selectedRol" 
-            class="px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none"
+            class="px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none"
             @change="handleSearch"
           >
             <option value="">Todos los roles</option>
@@ -35,7 +35,7 @@
           <!-- Filtro Estado -->
           <select 
             v-model="selectedEstado" 
-            class="px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none"
+            class="px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none"
             @change="handleSearch"
           >
             <option value="">Todos los estados</option>
@@ -46,7 +46,7 @@
 
         <button 
           @click="openCreateModal"
-          class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold shadow-xs transition cursor-pointer"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-semibold shadow-xs transition cursor-pointer"
         >
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -55,7 +55,7 @@
         </button>
       </div>
 
-      <!-- Tabla Compacta de Usuarios -->
+      <!-- Tabla de Usuarios con Iconos de Acción -->
       <div class="bg-white rounded border border-slate-200 shadow-xs overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
@@ -97,6 +97,7 @@
               </td>
               <td class="py-2.5 px-3 text-right">
                 <div class="inline-flex items-center gap-1">
+                  <!-- Editar -->
                   <button 
                     @click="openEditModal(u)" 
                     class="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded transition cursor-pointer"
@@ -106,17 +107,29 @@
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                   </button>
+
+                  <!-- Alternar Estado (Activar/Desactivar) -->
                   <button 
                     @click="confirmToggleState(u)" 
-                    class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 bg-white transition cursor-pointer hover:bg-slate-100"
-                    :class="u.estado ? 'text-slate-500 hover:text-rose-600' : 'text-slate-500 hover:text-emerald-600'"
+                    class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 bg-white transition cursor-pointer hover:bg-slate-100 text-slate-500 hover:text-slate-800"
                     :title="u.estado ? 'Desactivar usuario' : 'Activar usuario'"
                   >
-                    <svg v-if="u.estado" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg v-if="u.estado" class="w-3.5 h-3.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                     </svg>
-                    <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg v-else class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+
+                  <!-- Eliminar Usuario (Baja Lógica) -->
+                  <button 
+                    @click="confirmDelete(u)" 
+                    class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 bg-white text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition cursor-pointer"
+                    title="Eliminar usuario"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
@@ -140,7 +153,7 @@
           :href="link.url || '#'"
           :class="[
             'px-2.5 py-1 rounded border',
-            link.active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50',
+            link.active ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50',
             !link.url ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
           ]"
           v-html="link.label"
@@ -163,12 +176,12 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-medium text-slate-700 mb-1">CI / Documento *</label>
-              <input v-model="form.ci" type="text" required placeholder="Número de CI" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <input v-model="form.ci" type="text" required placeholder="Número de CI" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none" />
               <p v-if="form.errors.ci" class="text-[10px] text-rose-600 mt-0.5">{{ form.errors.ci }}</p>
             </div>
             <div>
               <label class="block text-[11px] font-medium text-slate-700 mb-1">Género *</label>
-              <select v-model="form.genero" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none">
+              <select v-model="form.genero" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none">
                 <option value="M">Masculino (M)</option>
                 <option value="F">Femenino (F)</option>
                 <option value="O">Otro (O)</option>
@@ -179,28 +192,28 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-medium text-slate-700 mb-1">Nombres *</label>
-              <input v-model="form.nombres" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <input v-model="form.nombres" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none" />
             </div>
             <div>
               <label class="block text-[11px] font-medium text-slate-700 mb-1">Apellidos *</label>
-              <input v-model="form.apellidos" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <input v-model="form.apellidos" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-medium text-slate-700 mb-1">Fecha de Nacimiento *</label>
-              <input v-model="form.fecha_nacimiento" type="date" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <input v-model="form.fecha_nacimiento" type="date" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none" />
             </div>
             <div>
               <label class="block text-[11px] font-medium text-slate-700 mb-1">Teléfono</label>
-              <input v-model="form.telefono" type="text" placeholder="ej. 75012345" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <input v-model="form.telefono" type="text" placeholder="ej. 75012345" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none" />
             </div>
           </div>
 
           <div>
             <label class="block text-[11px] font-medium text-slate-700 mb-1">Dirección de Domicilio</label>
-            <input v-model="form.direccion" type="text" placeholder="Calle, Barrio o Zona" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+            <input v-model="form.direccion" type="text" placeholder="Calle, Barrio o Zona" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none" />
           </div>
 
           <!-- Sección Credenciales de Usuario -->
@@ -208,13 +221,13 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-[11px] font-medium text-slate-700 mb-1">Usuario (Login) *</label>
-              <input v-model="form.username" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">Usuario *</label>
+              <input v-model="form.username" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none" />
               <p v-if="form.errors.username" class="text-[10px] text-rose-600 mt-0.5">{{ form.errors.username }}</p>
             </div>
             <div>
               <label class="block text-[11px] font-medium text-slate-700 mb-1">Rol Asignado *</label>
-              <select v-model="form.rol_id" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none">
+              <select v-model="form.rol_id" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none">
                 <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.nombre }}</option>
               </select>
             </div>
@@ -223,14 +236,14 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-medium text-slate-700 mb-1">Correo Electrónico *</label>
-              <input v-model="form.email" type="email" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <input v-model="form.email" type="email" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none" />
               <p v-if="form.errors.email" class="text-[10px] text-rose-600 mt-0.5">{{ form.errors.email }}</p>
             </div>
             <div>
               <label class="block text-[11px] font-medium text-slate-700 mb-1">
                 {{ isEditing ? 'Nueva Contraseña (Opcional)' : 'Contraseña *' }}
               </label>
-              <input v-model="form.password" type="password" :required="!isEditing" placeholder="••••••••" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <input v-model="form.password" type="password" :required="!isEditing" placeholder="••••••••" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-slate-600 outline-none" />
             </div>
           </div>
 
@@ -238,7 +251,7 @@
             <button type="button" @click="showModal = false" class="px-4 py-1.5 text-xs text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-100 cursor-pointer">
               Cancelar
             </button>
-            <button type="submit" :disabled="form.processing" class="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded shadow-xs cursor-pointer">
+            <button type="submit" :disabled="form.processing" class="px-4 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded shadow-xs cursor-pointer">
               {{ isEditing ? 'Guardar Cambios' : 'Registrar' }}
             </button>
           </div>
@@ -246,18 +259,30 @@
       </div>
     </div>
 
-    <!-- Diálogo Modal Central de Confirmación para Bajas Lógicas -->
+    <!-- Diálogo Modal: Alternar Estado (Activar/Desactivar) -->
     <DialogModal
-      :show="showConfirmModal"
+      :show="showConfirmToggleModal"
       :title="userToToggle?.estado ? 'Desactivar Usuario' : 'Activar Usuario'"
       :message="userToToggle?.estado 
-        ? `¿Confirmas la desactivación del usuario '${userToToggle?.username}'? No podrá iniciar sesión mientras esté inactivo.` 
+        ? `¿Confirmas la desactivación del usuario '${userToToggle?.username}'?` 
         : `¿Confirmas la activación del usuario '${userToToggle?.username}'?`"
       confirm-text="Confirmar"
       cancel-text="Cancelar"
-      :type="userToToggle?.estado ? 'danger' : 'info'"
+      :type="userToToggle?.estado ? 'warning' : 'brand'"
       @confirm="executeToggleState"
-      @close="showConfirmModal = false"
+      @close="showConfirmToggleModal = false"
+    />
+
+    <!-- Diálogo Modal: Eliminar Usuario -->
+    <DialogModal
+      :show="showDeleteModal"
+      title="Eliminar Usuario"
+      :message="`¿Estás seguro de que deseas eliminar al usuario '${userToDelete?.username}'?`"
+      confirm-text="Eliminar"
+      cancel-text="Cancelar"
+      type="danger"
+      @confirm="executeDelete"
+      @close="showDeleteModal = false"
     />
   </AppLayout>
 </template>
@@ -282,8 +307,11 @@ const showModal = ref(false);
 const isEditing = ref(false);
 const editingUserId = ref(null);
 
-const showConfirmModal = ref(false);
+const showConfirmToggleModal = ref(false);
 const userToToggle = ref(null);
+
+const showDeleteModal = ref(false);
+const userToDelete = ref(null);
 
 const form = useForm({
   ci: '',
@@ -349,15 +377,30 @@ const saveUser = () => {
 
 const confirmToggleState = (u) => {
   userToToggle.value = u;
-  showConfirmModal.value = true;
+  showConfirmToggleModal.value = true;
 };
 
 const executeToggleState = () => {
   if (!userToToggle.value) return;
-  router.delete(`/usuarios/${userToToggle.value.id}`, {
+  router.patch(`/usuarios/${userToToggle.value.id}/toggle`, {}, {
     onFinish: () => {
-      showConfirmModal.value = false;
+      showConfirmToggleModal.value = false;
       userToToggle.value = null;
+    }
+  });
+};
+
+const confirmDelete = (u) => {
+  userToDelete.value = u;
+  showDeleteModal.value = true;
+};
+
+const executeDelete = () => {
+  if (!userToDelete.value) return;
+  router.delete(`/usuarios/${userToDelete.value.id}`, {
+    onFinish: () => {
+      showDeleteModal.value = false;
+      userToDelete.value = null;
     }
   });
 };
