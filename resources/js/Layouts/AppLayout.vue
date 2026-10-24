@@ -60,7 +60,7 @@
     <DialogModal
       :show="showLogoutModal"
       title="Confirmar salida del sistema"
-      message="¿Estás seguro de que deseas cerrar tu sesión actual en la Clínica Vida Salud?"
+      message="¿Estás seguro de que deseas cerrar tu sesión actual?"
       confirm-text="Cerrar sesión"
       cancel-text="Permanecer"
       type="danger"

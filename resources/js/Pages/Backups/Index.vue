@@ -1,7 +1,7 @@
 <template>
   <AppLayout>
     <template #header>
-      <span>Módulo 1: Gestión de Respaldos de Base de Datos (CU-11)</span>
+      <span>Respaldos de Base de Datos</span>
     </template>
 
     <div class="space-y-4">

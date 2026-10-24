@@ -1,7 +1,7 @@
 <template>
   <AppLayout>
     <template #header>
-      <span>Ficha Clínica del Paciente (CU-02)</span>
+      <span>Ficha Clínica del Paciente</span>
     </template>
 
     <div class="space-y-4 max-w-4xl mx-auto">

@@ -1,7 +1,7 @@
 <template>
   <AppLayout>
     <template #header>
-      <span>Perfil del Profesional Médico (CU-12)</span>
+      <span>Perfil del Médico</span>
     </template>
 
     <div class="space-y-4 max-w-4xl mx-auto">

@@ -22,39 +22,41 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $inputKey = $request->has('email') ? 'email' : 'login';
+
         $request->validate([
-            'login' => 'required|string',
+            $inputKey => 'required|string',
             'password' => 'required|string',
         ], [
-            'login.required' => 'Ingresa tu usuario o correo electrónico.',
+            "{$inputKey}.required" => 'Ingresa tu correo electrónico.',
             'password.required' => 'Ingresa tu contraseña.',
         ]);
 
-        $loginInput = trim($request->login);
+        $emailInput = strtolower(trim($request->input($inputKey)));
 
         $usuario = UsuarioModel::with('persona', 'rol')
-            ->where(function ($q) use ($loginInput) {
-                $q->where('username', $loginInput)
-                  ->orWhere('email', $loginInput);
+            ->where(function ($q) use ($emailInput) {
+                $q->where('email', $emailInput)
+                  ->orWhere('username', $emailInput);
             })
             ->first();
 
         if (!$usuario) {
-            BitacoraService::registrar('INTENTO_FALLIDO', 'Seguridad', "Intento con usuario inexistente: {$loginInput}");
-            return back()->withErrors(['login' => 'Usuario o contraseña incorrectos.']);
+            BitacoraService::registrar('INTENTO_FALLIDO', 'Seguridad', "Intento fallido con cuenta: {$emailInput}");
+            return back()->withErrors([$inputKey => 'Correo electrónico o contraseña incorrectos.']);
         }
 
         if (!$usuario->estado) {
-            BitacoraService::registrar('ACCESO_DENEGADO', 'Seguridad', "Intento en cuenta inactiva: {$usuario->username}", $usuario->id);
-            return back()->withErrors(['login' => 'Esta cuenta se encuentra desactivada. Contacta al administrador.']);
+            BitacoraService::registrar('ACCESO_DENEGADO', 'Seguridad', "Intento en cuenta desactivada: {$usuario->username}", $usuario->id);
+            return back()->withErrors([$inputKey => 'Esta cuenta se encuentra desactivada.']);
         }
 
         // Verificar si la cuenta está bloqueada temporalmente
         if ($usuario->isBloqueado()) {
             $minutosRestantes = max(1, (int) ceil(now()->diffInSeconds($usuario->bloqueado_hasta) / 60));
-            BitacoraService::registrar('ACCESO_BLOQUEADO', 'Seguridad', "Intento durante bloqueo temporal: {$usuario->username}", $usuario->id);
+            BitacoraService::registrar('ACCESO_BLOQUEADO', 'Seguridad', "Intento durante bloqueo: {$usuario->username}", $usuario->id);
             return back()->withErrors([
-                'login' => "Cuenta bloqueada por seguridad. Podrás intentar nuevamente en {$minutosRestantes} minuto(s).",
+                $inputKey => "Cuenta bloqueada por seguridad. Podrás intentar nuevamente en {$minutosRestantes} minuto(s).",
             ]);
         }
 
@@ -70,7 +72,7 @@ class AuthController extends Controller
                 BitacoraService::registrar('BLOQUEO_SEGURIDAD', 'Seguridad', "Cuenta bloqueada por 15 minutos tras 5 fallos consecutivos: {$usuario->username}", $usuario->id);
 
                 return back()->withErrors([
-                    'login' => 'Has superado el límite de 5 intentos fallidos. Tu cuenta ha sido bloqueada temporalmente por 15 minutos.',
+                    $inputKey => 'Has superado el límite de 5 intentos fallidos. Tu cuenta ha sido bloqueada temporalmente por 15 minutos.',
                 ]);
             }
 
@@ -78,7 +80,7 @@ class AuthController extends Controller
             BitacoraService::registrar('PASSWORD_INCORRECTO', 'Seguridad', "Fallo de contraseña ({$usuario->intentos_fallidos}/5): {$usuario->username}", $usuario->id);
 
             return back()->withErrors([
-                'password' => "Contraseña incorrecta. Te quedan {$restantes} intento(s) antes del bloqueo.",
+                $inputKey => "Contraseña incorrecta. Te quedan {$restantes} intento(s) antes del bloqueo.",
             ]);
         }
 

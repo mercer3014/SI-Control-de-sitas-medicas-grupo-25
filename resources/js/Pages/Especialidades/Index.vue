@@ -1,7 +1,7 @@
 <template>
   <AppLayout>
     <template #header>
-      <span>Módulo 2: Gestión de Especialidades Médicas (CU-04)</span>
+      <span>Especialidades</span>
     </template>
 
     <div class="space-y-4">
@@ -73,31 +73,36 @@
                 {{ esp.medicos_count }} profesional(es)
               </td>
               <td class="py-2.5 px-3 text-center">
-                <span 
-                  :class="[
-                    'inline-block px-2 py-0.5 text-[10px] rounded font-semibold',
-                    esp.estado ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
-                  ]"
-                >
-                  {{ esp.estado ? 'Activa' : 'Inactiva' }}
+                <span class="inline-flex items-center gap-1.5 text-xs text-slate-700">
+                  <span class="w-2 h-2 rounded-full" :class="esp.estado ? 'bg-emerald-500' : 'bg-slate-300'"></span>
+                  <span>{{ esp.estado ? 'Activa' : 'Inactiva' }}</span>
                 </span>
               </td>
-              <td class="py-2.5 px-3 text-right space-x-1">
-                <button 
-                  @click="openEditModal(esp)" 
-                  class="px-2 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded transition cursor-pointer"
-                >
-                  Editar
-                </button>
-                <button 
-                  @click="confirmToggle(esp)" 
-                  :class="[
-                    'px-2 py-1 text-xs font-medium rounded transition cursor-pointer',
-                    esp.estado ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
-                  ]"
-                >
-                  {{ esp.estado ? 'Desactivar' : 'Activar' }}
-                </button>
+              <td class="py-2.5 px-3 text-right">
+                <div class="inline-flex items-center gap-1">
+                  <button 
+                    @click="openEditModal(esp)" 
+                    class="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded transition cursor-pointer"
+                    title="Editar especialidad"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                  <button 
+                    @click="confirmToggle(esp)" 
+                    class="w-7 h-7 flex items-center justify-center rounded border border-slate-200 bg-white transition cursor-pointer hover:bg-slate-100"
+                    :class="esp.estado ? 'text-slate-500 hover:text-rose-600' : 'text-slate-500 hover:text-emerald-600'"
+                    :title="esp.estado ? 'Desactivar especialidad' : 'Activar especialidad'"
+                  >
+                    <svg v-if="esp.estado" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                    <svg v-else class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
 
