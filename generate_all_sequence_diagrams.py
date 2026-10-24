@@ -9,7 +9,7 @@ def draw_sequence_diagram(config):
     lifelines = config["lifelines"]
     activations = config["activations"]
     messages = config["messages"]
-    width = config.get("width", 780)
+    width = config.get("width", 840)
     height = config.get("height", 500)
 
     scale = 3
@@ -19,7 +19,6 @@ def draw_sequence_diagram(config):
     img = Image.new("RGBA", (canvas_w, canvas_h), (255, 255, 255, 255))
     draw = ImageDraw.Draw(img)
 
-    # Fonts
     font_path_regular = "C:/Windows/Fonts/segoeui.ttf"
     font_path_bold = "C:/Windows/Fonts/segoeuib.ttf"
     if not os.path.exists(font_path_regular):
@@ -28,7 +27,7 @@ def draw_sequence_diagram(config):
 
     font_sd = ImageFont.truetype(font_path_regular, 11 * scale)
     font_actor = ImageFont.truetype(font_path_bold, 11.5 * scale)
-    font_box = ImageFont.truetype(font_path_bold, 11 * scale)
+    font_box = ImageFont.truetype(font_path_bold, 10 * scale)
     font_msg = ImageFont.truetype(font_path_regular, 10 * scale)
 
     margin = 15 * scale
@@ -55,10 +54,10 @@ def draw_sequence_diagram(config):
     draw.polygon(tab_pts, fill=(255, 255, 255), outline=(40, 40, 40), width=int(1.4 * scale))
     draw.text((margin + 7 * scale, margin + 4 * scale), sd_text, fill=(20, 20, 20), font=font_sd)
 
-    # 3. Lifeline X Positions (Give generous margin on right for self-calls and labels)
+    # 3. Lifeline X Positions
     num_lifelines = 1 + len(lifelines)
     start_x = margin + 50 * scale
-    right_padding = 135 * scale
+    right_padding = 130 * scale
     avail_w = frame_w - (50 * scale) - right_padding
     spacing = avail_w / (num_lifelines - 1)
 
@@ -87,7 +86,7 @@ def draw_sequence_diagram(config):
     lifeline_start_y = [torso_bot + 32 * scale]
 
     # 5. Draw Object Lifeline Boxes
-    box_w = min(112 * scale, spacing * 0.85)
+    box_w = min(128 * scale, spacing * 0.88)
     box_h = 30 * scale
 
     shadow_img = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
@@ -186,7 +185,6 @@ def draw_sequence_diagram(config):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     final_img.save(filename, "PNG")
 
-    # Also copy to public/images and artifact directory
     base_name = os.path.basename(filename)
     public_path = os.path.join("public/images", base_name)
     artifact_path = os.path.join(r"C:\Users\Cerezo Alex\.gemini\antigravity\brain\79c3592a-8363-4fa4-a132-af215ad350b3", base_name)
@@ -199,12 +197,12 @@ def draw_sequence_diagram(config):
 
 def generate_all():
     diagrams = [
-        # 1. CU01: Gestionar Usuarios
+        # CU-01: Gestionar Usuarios
         {
             "filename": "docs/diagramas/cu01_gestionar_usuarios.png",
             "title": "CU01: Gestionar Usuarios",
             "actor": "Administrador",
-            "width": 880,
+            "width": 890,
             "height": 520,
             "lifelines": ["VistaUsuario", "Controller_Usuario", "Usuario", "Rol", "Permiso"],
             "activations": [
@@ -234,39 +232,127 @@ def generate_all():
             ]
         },
 
-        # 2. CU02: Gestionar Pacientes
+        # CU-02: Gestionar Roles y Permisos
         {
-            "filename": "docs/diagramas/cu02_gestionar_pacientes.png",
-            "title": "CU02: Gestionar Pacientes",
-            "actor": "Recepcionista",
+            "filename": "docs/diagramas/cu02_gestionar_roles_permisos.png",
+            "title": "CU02: Gestionar Roles y Permisos",
+            "actor": "Administrador",
+            "width": 780,
+            "height": 500,
+            "lifelines": ["Vista_Rol", "Controller_Rol", "Rol", "Permiso"],
+            "activations": [
+                (1, 95, 165), (2, 100, 155), (3, 105, 135), (4, 115, 145),
+                (1, 210, 280), (2, 215, 270), (3, 220, 255), (4, 245, 265),
+                (1, 320, 390), (2, 325, 380), (4, 335, 370),
+            ],
+            "messages": [
+                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarRol"},
+                {"from": 1, "to": 2, "y": 105, "label": "2 : MostrarRoles"},
+                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerRoles"},
+                {"from": 3, "to": 4, "y": 115, "label": "4 : ObtenerPermisos"},
+
+                {"from": 0, "to": 1, "y": 215, "label": "5 : ModificarPermisos"},
+                {"from": 1, "to": 2, "y": 220, "label": "6 : ActualizarPermisos"},
+                {"from": 2, "to": 3, "y": 225, "label": "7 : SincronizarPermisos"},
+                {"from": 3, "to": 4, "y": 245, "label": "8 : AsignarPermisos"},
+
+                {"from": 0, "to": 1, "y": 325, "label": "9 : ValidarAcceso"},
+                {"from": 1, "to": 2, "y": 330, "label": "10 : VerificarPermisos"},
+                {"from": 2, "to": 4, "y": 335, "label": "11 : ConsultarPermiso"},
+            ]
+        },
+
+        # CU-03: Consultar Bitácora de Auditoría
+        {
+            "filename": "docs/diagramas/cu03_consultar_bitacora.png",
+            "title": "CU03: Consultar Bitácora de Auditoría",
+            "actor": "Administrador",
+            "width": 780,
+            "height": 500,
+            "lifelines": ["Vista_Bitacora", "Controller_Bitacora", "Bitacora", "ServerLogs"],
+            "activations": [
+                (1, 95, 165), (2, 100, 155), (3, 105, 125), (3, 132, 150),
+                (1, 210, 275), (2, 215, 265), (3, 220, 255),
+                (1, 320, 385), (2, 325, 375), (4, 330, 365),
+            ],
+            "messages": [
+                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarBitacora"},
+                {"from": 1, "to": 2, "y": 105, "label": "2 : FiltrarLogs"},
+                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerRegistros"},
+                {"from": 3, "to": 3, "y": 132, "label": "4 : FormatearAuditoria", "is_self": True},
+
+                {"from": 0, "to": 1, "y": 215, "label": "5 : VerDetalleEvento"},
+                {"from": 1, "to": 2, "y": 220, "label": "6 : ConsultarDetalle"},
+                {"from": 2, "to": 3, "y": 225, "label": "7 : ObtenerValoresPrevios"},
+
+                {"from": 0, "to": 1, "y": 325, "label": "8 : VerLogsServidor"},
+                {"from": 1, "to": 2, "y": 330, "label": "9 : LeerArchivosLog"},
+                {"from": 2, "to": 4, "y": 335, "label": "10 : ObtenerLineasLog"},
+            ]
+        },
+
+        # CU-04: Gestionar Respaldos de Base de Datos
+        {
+            "filename": "docs/diagramas/cu04_gestionar_respaldos.png",
+            "title": "CU04: Gestionar Respaldos de Base de Datos",
+            "actor": "Administrador",
             "width": 760,
             "height": 490,
-            "lifelines": ["Vista_Paciente", "Controller_Paciente", "Paciente"],
+            "lifelines": ["Vista_Respaldo", "Controller_Backup", "BaseDeDatos"],
+            "activations": [
+                (1, 95, 165), (2, 100, 155), (3, 105, 145),
+                (1, 210, 280), (2, 215, 270), (3, 220, 240), (3, 248, 265),
+                (1, 320, 385), (2, 325, 375), (1, 350, 380),
+            ],
+            "messages": [
+                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarRespaldos"},
+                {"from": 1, "to": 2, "y": 105, "label": "2 : ListarRespaldos"},
+                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerArchivosSQL"},
+
+                {"from": 0, "to": 1, "y": 215, "label": "4 : SolicitarRespaldo"},
+                {"from": 1, "to": 2, "y": 220, "label": "5 : EjecutarBackup"},
+                {"from": 2, "to": 3, "y": 225, "label": "6 : EjecutarPgDump"},
+                {"from": 3, "to": 3, "y": 248, "label": "7 : GenerarArchivoSQL", "is_self": True},
+
+                {"from": 0, "to": 1, "y": 325, "label": "8 : DescargarRespaldo"},
+                {"from": 1, "to": 2, "y": 330, "label": "9 : PrepararDescarga"},
+                {"from": 2, "to": 1, "y": 350, "label": "10 : EnviarArchivoSQL"},
+            ]
+        },
+
+        # CU-05: Gestionar Especialidades
+        {
+            "filename": "docs/diagramas/cu05_gestionar_especialidades.png",
+            "title": "CU05: Gestionar Especialidades",
+            "actor": "Administrador",
+            "width": 760,
+            "height": 490,
+            "lifelines": ["Vista_Especialidad", "Controller_Especialidad", "Especialidad"],
             "activations": [
                 (1, 95, 165), (2, 100, 155), (3, 105, 125), (3, 132, 150),
                 (1, 210, 275), (2, 215, 265), (3, 220, 255),
                 (1, 320, 385), (2, 325, 375), (3, 330, 365),
             ],
             "messages": [
-                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarPaciente"},
-                {"from": 1, "to": 2, "y": 105, "label": "2 : MostrarPaciente"},
-                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerPaciente"},
-                {"from": 3, "to": 3, "y": 132, "label": "4 : BuscarPaciente", "is_self": True},
+                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarEspecialidad"},
+                {"from": 1, "to": 2, "y": 105, "label": "2 : MostrarEspecialidades"},
+                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerEspecialidades"},
+                {"from": 3, "to": 3, "y": 132, "label": "4 : FiltrarActivas", "is_self": True},
 
-                {"from": 0, "to": 1, "y": 215, "label": "5 : NuevoPaciente"},
-                {"from": 1, "to": 2, "y": 220, "label": "6 : RegistrarPaciente"},
-                {"from": 2, "to": 3, "y": 225, "label": "7 : GuardarPaciente"},
+                {"from": 0, "to": 1, "y": 215, "label": "5 : NuevaEspecialidad"},
+                {"from": 1, "to": 2, "y": 220, "label": "6 : RegistrarEspecialidad"},
+                {"from": 2, "to": 3, "y": 225, "label": "7 : GuardarEspecialidad"},
 
-                {"from": 0, "to": 1, "y": 325, "label": "8 : EditarPaciente"},
-                {"from": 1, "to": 2, "y": 330, "label": "9 : ModificarPaciente"},
-                {"from": 2, "to": 3, "y": 335, "label": "10 : ActualizarPaciente"},
+                {"from": 0, "to": 1, "y": 325, "label": "8 : EditarEspecialidad"},
+                {"from": 1, "to": 2, "y": 330, "label": "9 : ModificarEspecialidad"},
+                {"from": 2, "to": 3, "y": 335, "label": "10 : ActualizarEspecialidad"},
             ]
         },
 
-        # 3. CU03: Gestionar Médicos
+        # CU-06: Gestionar Médicos
         {
-            "filename": "docs/diagramas/cu03_gestionar_medicos.png",
-            "title": "CU03: Gestionar Médicos",
+            "filename": "docs/diagramas/cu06_gestionar_medicos.png",
+            "title": "CU06: Gestionar Médicos",
             "actor": "Administrador",
             "width": 780,
             "height": 500,
@@ -294,151 +380,63 @@ def generate_all():
             ]
         },
 
-        # 4. CU04: Gestionar Especialidades
+        # CU-07: Gestionar Perfil Médico Base
         {
-            "filename": "docs/diagramas/cu04_gestionar_especialidades.png",
-            "title": "CU04: Gestionar Especialidades",
-            "actor": "Administrador",
+            "filename": "docs/diagramas/cu07_perfil_medico_base.png",
+            "title": "CU07: Gestionar Perfil Médico Base",
+            "actor": "Medico",
+            "width": 930,
+            "height": 510,
+            "lifelines": ["Vista_PerfilMedico", "Controller_PerfilMedico", "Medico", "Especialidad", "Persona"],
+            "activations": [
+                (1, 95, 175), (2, 100, 170), (3, 105, 140), (4, 115, 145), (5, 140, 165),
+                (1, 215, 285), (2, 220, 280), (3, 225, 275), (3, 250, 268),
+                (1, 325, 395), (2, 330, 390), (5, 335, 385),
+            ],
+            "messages": [
+                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarPerfil"},
+                {"from": 1, "to": 2, "y": 105, "label": "2 : MostrarPerfil"},
+                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerDatosPerfil"},
+                {"from": 3, "to": 4, "y": 115, "label": "4 : ObtenerEspecialidad"},
+                {"from": 3, "to": 5, "y": 140, "label": "5 : ObtenerDatosPersonales"},
+
+                {"from": 0, "to": 1, "y": 220, "label": "6 : EditarPerfil"},
+                {"from": 1, "to": 2, "y": 225, "label": "7 : ModificarDatos"},
+                {"from": 2, "to": 3, "y": 230, "label": "8 : ActualizarPerfil"},
+                {"from": 3, "to": 3, "y": 250, "label": "9 : ActualizarTarifa", "is_self": True},
+
+                {"from": 0, "to": 1, "y": 330, "label": "10 : EditarContacto"},
+                {"from": 1, "to": 2, "y": 335, "label": "11 : ModificarContacto"},
+                {"from": 2, "to": 5, "y": 340, "label": "12 : ActualizarPersona"},
+            ]
+        },
+
+        # CU-08: Gestionar Pacientes
+        {
+            "filename": "docs/diagramas/cu08_gestionar_pacientes.png",
+            "title": "CU08: Gestionar Pacientes",
+            "actor": "Recepcionista",
             "width": 760,
             "height": 490,
-            "lifelines": ["Vista_Especialidad", "Controller_Especialidad", "Especialidad"],
+            "lifelines": ["Vista_Paciente", "Controller_Paciente", "Paciente"],
             "activations": [
                 (1, 95, 165), (2, 100, 155), (3, 105, 125), (3, 132, 150),
                 (1, 210, 275), (2, 215, 265), (3, 220, 255),
                 (1, 320, 385), (2, 325, 375), (3, 330, 365),
             ],
             "messages": [
-                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarEspecialidad"},
-                {"from": 1, "to": 2, "y": 105, "label": "2 : MostrarEspecialidades"},
-                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerEspecialidades"},
-                {"from": 3, "to": 3, "y": 132, "label": "4 : FiltrarActivas", "is_self": True},
+                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarPaciente"},
+                {"from": 1, "to": 2, "y": 105, "label": "2 : MostrarPaciente"},
+                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerPaciente"},
+                {"from": 3, "to": 3, "y": 132, "label": "4 : BuscarPaciente", "is_self": True},
 
-                {"from": 0, "to": 1, "y": 215, "label": "5 : NuevaEspecialidad"},
-                {"from": 1, "to": 2, "y": 220, "label": "6 : RegistrarEspecialidad"},
-                {"from": 2, "to": 3, "y": 225, "label": "7 : GuardarEspecialidad"},
+                {"from": 0, "to": 1, "y": 215, "label": "5 : NuevoPaciente"},
+                {"from": 1, "to": 2, "y": 220, "label": "6 : RegistrarPaciente"},
+                {"from": 2, "to": 3, "y": 225, "label": "7 : GuardarPaciente"},
 
-                {"from": 0, "to": 1, "y": 325, "label": "8 : EditarEspecialidad"},
-                {"from": 1, "to": 2, "y": 330, "label": "9 : ModificarEspecialidad"},
-                {"from": 2, "to": 3, "y": 335, "label": "10 : ActualizarEspecialidad"},
-            ]
-        },
-
-        # 5. CU09: Gestionar Roles y Permisos
-        {
-            "filename": "docs/diagramas/cu09_gestionar_roles_permisos.png",
-            "title": "CU09: Gestionar Roles y Permisos",
-            "actor": "Administrador",
-            "width": 780,
-            "height": 500,
-            "lifelines": ["Vista_Rol", "Controller_Rol", "Rol", "Permiso"],
-            "activations": [
-                (1, 95, 165), (2, 100, 155), (3, 105, 135), (4, 115, 145),
-                (1, 210, 280), (2, 215, 270), (3, 220, 255), (4, 245, 265),
-                (1, 320, 390), (2, 325, 380), (4, 335, 370),
-            ],
-            "messages": [
-                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarRol"},
-                {"from": 1, "to": 2, "y": 105, "label": "2 : MostrarRoles"},
-                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerRoles"},
-                {"from": 3, "to": 4, "y": 115, "label": "4 : ObtenerPermisos"},
-
-                {"from": 0, "to": 1, "y": 215, "label": "5 : ModificarPermisos"},
-                {"from": 1, "to": 2, "y": 220, "label": "6 : ActualizarPermisos"},
-                {"from": 2, "to": 3, "y": 225, "label": "7 : SincronizarPermisos"},
-                {"from": 3, "to": 4, "y": 245, "label": "8 : AsignarPermisos"},
-
-                {"from": 0, "to": 1, "y": 325, "label": "9 : ValidarAcceso"},
-                {"from": 1, "to": 2, "y": 330, "label": "10 : VerificarPermisos"},
-                {"from": 2, "to": 4, "y": 335, "label": "11 : ConsultarPermiso"},
-            ]
-        },
-
-        # 6. CU10: Consultar Bitácora de Auditoría
-        {
-            "filename": "docs/diagramas/cu10_consultar_bitacora.png",
-            "title": "CU10: Consultar Bitácora de Auditoría",
-            "actor": "Administrador",
-            "width": 780,
-            "height": 500,
-            "lifelines": ["Vista_Bitacora", "Controller_Bitacora", "Bitacora", "ServerLogs"],
-            "activations": [
-                (1, 95, 165), (2, 100, 155), (3, 105, 125), (3, 132, 150),
-                (1, 210, 275), (2, 215, 265), (3, 220, 255),
-                (1, 320, 385), (2, 325, 375), (4, 330, 365),
-            ],
-            "messages": [
-                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarBitacora"},
-                {"from": 1, "to": 2, "y": 105, "label": "2 : FiltrarLogs"},
-                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerRegistros"},
-                {"from": 3, "to": 3, "y": 132, "label": "4 : FormatearAuditoria", "is_self": True},
-
-                {"from": 0, "to": 1, "y": 215, "label": "5 : VerDetalleEvento"},
-                {"from": 1, "to": 2, "y": 220, "label": "6 : ConsultarDetalle"},
-                {"from": 2, "to": 3, "y": 225, "label": "7 : ObtenerValoresPrevios"},
-
-                {"from": 0, "to": 1, "y": 325, "label": "8 : VerLogsServidor"},
-                {"from": 1, "to": 2, "y": 330, "label": "9 : LeerArchivosLog"},
-                {"from": 2, "to": 4, "y": 335, "label": "10 : ObtenerLineasLog"},
-            ]
-        },
-
-        # 7. CU11: Gestionar Respaldos de Base de Datos
-        {
-            "filename": "docs/diagramas/cu11_gestionar_respaldos.png",
-            "title": "CU11: Gestionar Respaldos de Base de Datos",
-            "actor": "Administrador",
-            "width": 760,
-            "height": 490,
-            "lifelines": ["Vista_Respaldo", "Controller_Backup", "BaseDeDatos"],
-            "activations": [
-                (1, 95, 165), (2, 100, 155), (3, 105, 145),
-                (1, 210, 280), (2, 215, 270), (3, 220, 240), (3, 248, 265),
-                (1, 320, 385), (2, 325, 375), (1, 350, 380),
-            ],
-            "messages": [
-                {"from": 0, "to": 1, "y": 100, "label": "1 : SeleccionarRespaldos"},
-                {"from": 1, "to": 2, "y": 105, "label": "2 : ListarRespaldos"},
-                {"from": 2, "to": 3, "y": 110, "label": "3 : ObtenerArchivosSQL"},
-
-                {"from": 0, "to": 1, "y": 215, "label": "4 : SolicitarRespaldo"},
-                {"from": 1, "to": 2, "y": 220, "label": "5 : EjecutarBackup"},
-                {"from": 2, "to": 3, "y": 225, "label": "6 : EjecutarPgDump"},
-                {"from": 3, "to": 3, "y": 248, "label": "7 : GenerarArchivoSQL", "is_self": True},
-
-                {"from": 0, "to": 1, "y": 325, "label": "8 : DescargarRespaldo"},
-                {"from": 1, "to": 2, "y": 330, "label": "9 : PrepararDescarga"},
-                {"from": 2, "to": 1, "y": 350, "label": "10 : EnviarArchivoSQL"},
-            ]
-        },
-
-        # 8. CU: Autenticación e Inicio de Sesión
-        {
-            "filename": "docs/diagramas/cu_autenticacion_login.png",
-            "title": "CU: Autenticación e Inicio de Sesión",
-            "actor": "Usuario",
-            "width": 780,
-            "height": 500,
-            "lifelines": ["Vista_Login", "Controller_Auth", "Usuario", "Bitacora"],
-            "activations": [
-                (1, 95, 175), (2, 100, 170), (3, 105, 142), (4, 150, 168),
-                (1, 210, 275), (2, 215, 265), (3, 220, 240), (3, 246, 262),
-                (1, 320, 385), (2, 325, 375), (3, 330, 365),
-            ],
-            "messages": [
-                {"from": 0, "to": 1, "y": 100, "label": "1 : IngresarCredenciales"},
-                {"from": 1, "to": 2, "y": 105, "label": "2 : ValidarCredenciales"},
-                {"from": 2, "to": 3, "y": 110, "label": "3 : BuscarUsuario"},
-                {"from": 3, "to": 3, "y": 124, "label": "4 : VerificarPassword", "is_self": True},
-                {"from": 2, "to": 4, "y": 154, "label": "5 : RegistrarAcceso"},
-
-                {"from": 0, "to": 1, "y": 215, "label": "6 : PasswordErroneo"},
-                {"from": 1, "to": 2, "y": 220, "label": "7 : NotificarFallo"},
-                {"from": 2, "to": 3, "y": 225, "label": "8 : IncrementarIntentos"},
-                {"from": 3, "to": 3, "y": 246, "label": "9 : BloquearCuenta", "is_self": True},
-
-                {"from": 0, "to": 1, "y": 325, "label": "10 : SolicitarToken"},
-                {"from": 1, "to": 2, "y": 330, "label": "11 : EnviarTokenResend"},
-                {"from": 2, "to": 3, "y": 335, "label": "12 : ActualizarPassword"},
+                {"from": 0, "to": 1, "y": 325, "label": "8 : EditarPaciente"},
+                {"from": 1, "to": 2, "y": 330, "label": "9 : ModificarPaciente"},
+                {"from": 2, "to": 3, "y": 335, "label": "10 : ActualizarPaciente"},
             ]
         },
     ]
