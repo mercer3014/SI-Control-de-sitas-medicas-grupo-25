@@ -1,0 +1,361 @@
+<template>
+  <AppLayout>
+    <template #header>
+      <span>Módulo 1: Gestión de Usuarios (CU-01)</span>
+    </template>
+
+    <div class="space-y-4">
+      <!-- Barra Superior: Filtros y Botón de Registro -->
+      <div class="bg-white p-3.5 rounded border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <!-- Buscador -->
+          <div class="relative w-full sm:w-64">
+            <input 
+              v-model="search" 
+              type="text" 
+              placeholder="Buscar por CI, nombre, usuario..." 
+              class="w-full pl-8 pr-3 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+              @keyup.enter="handleSearch"
+            />
+            <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          <!-- Filtro Rol -->
+          <select 
+            v-model="selectedRol" 
+            class="px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none"
+            @change="handleSearch"
+          >
+            <option value="">Todos los roles</option>
+            <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.nombre }}</option>
+          </select>
+
+          <!-- Filtro Estado -->
+          <select 
+            v-model="selectedEstado" 
+            class="px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none"
+            @change="handleSearch"
+          >
+            <option value="">Todos los estados</option>
+            <option value="1">Activos</option>
+            <option value="0">Inactivos</option>
+          </select>
+        </div>
+
+        <button 
+          @click="openCreateModal"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold shadow-xs transition cursor-pointer"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Registrar Usuario</span>
+        </button>
+      </div>
+
+      <!-- Tabla Compacta de Usuarios -->
+      <div class="bg-white rounded border border-slate-200 shadow-xs overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-100/80 border-b border-slate-200 text-slate-700 font-semibold uppercase text-[11px] tracking-wider">
+              <th class="py-2.5 px-3">Persona / CI</th>
+              <th class="py-2.5 px-3">Usuario</th>
+              <th class="py-2.5 px-3">Correo</th>
+              <th class="py-2.5 px-3">Rol</th>
+              <th class="py-2.5 px-3 text-center">Estado</th>
+              <th class="py-2.5 px-3 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr 
+              v-for="u in usuarios.data" 
+              :key="u.id"
+              class="hover:bg-slate-50 transition"
+            >
+              <td class="py-2.5 px-3">
+                <span class="font-medium text-slate-900 block">{{ u.persona?.nombre_completo }}</span>
+                <span class="text-[11px] text-slate-500 font-mono">CI: {{ u.persona?.ci }} &bull; {{ u.persona?.telefono || 'Sin teléfono' }}</span>
+              </td>
+              <td class="py-2.5 px-3 font-mono font-medium text-slate-700">
+                {{ u.username }}
+              </td>
+              <td class="py-2.5 px-3 text-slate-600">
+                {{ u.email }}
+              </td>
+              <td class="py-2.5 px-3">
+                <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  {{ u.rol?.nombre }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-center">
+                <span 
+                  :class="[
+                    'inline-block px-2 py-0.5 text-[10px] rounded font-semibold',
+                    u.estado ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                  ]"
+                >
+                  {{ u.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="py-2.5 px-3 text-right space-x-1">
+                <button 
+                  @click="openEditModal(u)" 
+                  class="px-2 py-1 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded transition cursor-pointer"
+                  title="Editar datos"
+                >
+                  Editar
+                </button>
+                <button 
+                  @click="confirmToggleState(u)" 
+                  :class="[
+                    'px-2 py-1 text-xs font-medium rounded transition cursor-pointer',
+                    u.estado ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200' : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+                  ]"
+                  :title="u.estado ? 'Desactivar usuario' : 'Activar usuario'"
+                >
+                  {{ u.estado ? 'Desactivar' : 'Activar' }}
+                </button>
+              </td>
+            </tr>
+
+            <tr v-if="usuarios.data.length === 0">
+              <td colspan="6" class="py-8 text-center text-xs text-slate-500">
+                No se encontraron usuarios registrados con los criterios seleccionados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div v-if="usuarios.links.length > 3" class="flex justify-end gap-1 text-xs">
+        <Link 
+          v-for="(link, i) in usuarios.links" 
+          :key="i"
+          :href="link.url || '#'"
+          :class="[
+            'px-2.5 py-1 rounded border',
+            link.active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50',
+            !link.url ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+          ]"
+          v-html="link.label"
+        />
+      </div>
+    </div>
+
+    <!-- Modal Formulario: Crear / Editar Usuario -->
+    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+      <div class="bg-white rounded-lg shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div class="px-5 py-3.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-slate-800">
+            {{ isEditing ? 'Editar Usuario' : 'Registrar Nuevo Usuario' }}
+          </h3>
+          <button @click="showModal = false" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">&times;</button>
+        </div>
+
+        <form @submit.prevent="saveUser" class="p-5 space-y-3.5">
+          <!-- Sección Identidad Persona -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">CI / Documento *</label>
+              <input v-model="form.ci" type="text" required placeholder="Número de CI" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <p v-if="form.errors.ci" class="text-[10px] text-rose-600 mt-0.5">{{ form.errors.ci }}</p>
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">Género *</label>
+              <select v-model="form.genero" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none">
+                <option value="M">Masculino (M)</option>
+                <option value="F">Femenino (F)</option>
+                <option value="O">Otro (O)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">Nombres *</label>
+              <input v-model="form.nombres" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">Apellidos *</label>
+              <input v-model="form.apellidos" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">Fecha de Nacimiento *</label>
+              <input v-model="form.fecha_nacimiento" type="date" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">Teléfono</label>
+              <input v-model="form.telefono" type="text" placeholder="ej. 75012345" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-slate-700 mb-1">Dirección de Domicilio</label>
+            <input v-model="form.direccion" type="text" placeholder="Calle, Barrio o Zona" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+          </div>
+
+          <!-- Sección Credenciales de Usuario -->
+          <hr class="border-slate-200 my-2" />
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">Usuario (Login) *</label>
+              <input v-model="form.username" type="text" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <p v-if="form.errors.username" class="text-[10px] text-rose-600 mt-0.5">{{ form.errors.username }}</p>
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">Rol Asignado *</label>
+              <select v-model="form.rol_id" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none">
+                <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.nombre }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">Correo Electrónico *</label>
+              <input v-model="form.email" type="email" required class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+              <p v-if="form.errors.email" class="text-[10px] text-rose-600 mt-0.5">{{ form.errors.email }}</p>
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-slate-700 mb-1">
+                {{ isEditing ? 'Nueva Contraseña (Opcional)' : 'Contraseña *' }}
+              </label>
+              <input v-model="form.password" type="password" :required="!isEditing" placeholder="••••••••" class="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 focus:border-blue-600 outline-none" />
+            </div>
+          </div>
+
+          <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 -mx-5 -mb-5 flex justify-end gap-2.5 mt-4">
+            <button type="button" @click="showModal = false" class="px-4 py-1.5 text-xs text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-100 cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit" :disabled="form.processing" class="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded shadow-xs cursor-pointer">
+              {{ isEditing ? 'Guardar Cambios' : 'Registrar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Diálogo Modal Central de Confirmación para Bajas Lógicas -->
+    <DialogModal
+      :show="showConfirmModal"
+      :title="userToToggle?.estado ? 'Desactivar Usuario' : 'Activar Usuario'"
+      :message="userToToggle?.estado 
+        ? `¿Confirmas la desactivación del usuario '${userToToggle?.username}'? No podrá iniciar sesión mientras esté inactivo.` 
+        : `¿Confirmas la activación del usuario '${userToToggle?.username}'?`"
+      confirm-text="Confirmar"
+      cancel-text="Cancelar"
+      :type="userToToggle?.estado ? 'danger' : 'info'"
+      @confirm="executeToggleState"
+      @close="showConfirmModal = false"
+    />
+  </AppLayout>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { router, useForm, Link } from '@inertiajs/vue3';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import DialogModal from '@/Components/DialogModal.vue';
+
+const props = defineProps({
+  usuarios: Object,
+  roles: Array,
+  filters: Object,
+});
+
+const search = ref(props.filters?.buscar || '');
+const selectedRol = ref(props.filters?.rol_id || '');
+const selectedEstado = ref(props.filters?.estado ?? '');
+
+const showModal = ref(false);
+const isEditing = ref(false);
+const editingUserId = ref(null);
+
+const showConfirmModal = ref(false);
+const userToToggle = ref(null);
+
+const form = useForm({
+  ci: '',
+  nombres: '',
+  apellidos: '',
+  fecha_nacimiento: '',
+  genero: 'M',
+  telefono: '',
+  direccion: '',
+  username: '',
+  email: '',
+  password: '',
+  rol_id: props.roles?.[0]?.id || 1,
+  estado: true,
+});
+
+const handleSearch = () => {
+  router.get('/usuarios', {
+    buscar: search.value,
+    rol_id: selectedRol.value,
+    estado: selectedEstado.value,
+  }, { preserveState: true });
+};
+
+const openCreateModal = () => {
+  isEditing.value = false;
+  editingUserId.value = null;
+  form.reset();
+  form.clearErrors();
+  showModal.value = true;
+};
+
+const openEditModal = (u) => {
+  isEditing.value = true;
+  editingUserId.value = u.id;
+  form.clearErrors();
+  form.ci = u.persona?.ci || '';
+  form.nombres = u.persona?.nombres || '';
+  form.apellidos = u.persona?.apellidos || '';
+  form.fecha_nacimiento = u.persona?.fecha_nacimiento ? u.persona.fecha_nacimiento.substring(0, 10) : '';
+  form.genero = u.persona?.genero || 'M';
+  form.telefono = u.persona?.telefono || '';
+  form.direccion = u.persona?.direccion || '';
+  form.username = u.username;
+  form.email = u.email;
+  form.password = '';
+  form.rol_id = u.rol_id;
+  form.estado = u.estado;
+  showModal.value = true;
+};
+
+const saveUser = () => {
+  if (isEditing.value) {
+    form.put(`/usuarios/${editingUserId.value}`, {
+      onSuccess: () => { showModal.value = false; },
+    });
+  } else {
+    form.post('/usuarios', {
+      onSuccess: () => { showModal.value = false; },
+    });
+  }
+};
+
+const confirmToggleState = (u) => {
+  userToToggle.value = u;
+  showConfirmModal.value = true;
+};
+
+const executeToggleState = () => {
+  if (!userToToggle.value) return;
+  router.delete(`/usuarios/${userToToggle.value.id}`, {
+    onFinish: () => {
+      showConfirmModal.value = false;
+      userToToggle.value = null;
+    }
+  });
+};
+</script>
