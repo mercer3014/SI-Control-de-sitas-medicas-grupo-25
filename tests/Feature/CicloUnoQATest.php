@@ -80,12 +80,12 @@ class CicloUnoQATest extends TestCase
     public function test_solicitud_recuperacion_contrasena_genera_token(): void
     {
         $response = $this->post('/forgot-password', [
-            'email' => 'admin@vidasalud.com',
+            'email' => 'admin@gmail.com',
         ]);
 
         $response->assertSessionHas('success');
         $this->assertDatabaseHas('password_reset_tokens', [
-            'email' => 'admin@vidasalud.com',
+            'email' => 'admin@gmail.com',
         ]);
     }
 

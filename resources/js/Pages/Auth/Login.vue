@@ -34,7 +34,7 @@
         :error="form.errors.email"
         required
       >
-        <template #default="{ inputClass, id }">
+        <template #default="{ id }">
           <div class="relative">
             <AppIcon name="mail" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
@@ -45,7 +45,8 @@
               autofocus
               autocomplete="email"
               placeholder="nombre@correo.com"
-              :class="[inputClass, 'pl-9']"
+              class="w-full rounded-lg border border-slate-300 bg-white py-2 text-xs text-slate-900 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 focus:outline-none transition"
+              style="padding-left: 2.5rem !important;"
             />
           </div>
         </template>
@@ -57,7 +58,7 @@
         :error="form.errors.password"
         required
       >
-        <template #default="{ inputClass, id }">
+        <template #default="{ id }">
           <div class="relative">
             <AppIcon name="lock" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
@@ -67,12 +68,13 @@
               required
               autocomplete="current-password"
               placeholder="••••••••"
-              :class="[inputClass, 'pl-9 pr-10']"
+              class="w-full rounded-lg border border-slate-300 bg-white py-2 text-xs text-slate-900 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 focus:outline-none transition"
+              style="padding-left: 2.5rem !important; padding-right: 2.5rem !important;"
             />
             <button
               type="button"
               @click="showPassword = !showPassword"
-              class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-600 transition cursor-pointer"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-600 transition cursor-pointer"
               :title="showPassword ? 'Ocultar contraseña' : 'Ver contraseña'"
             >
               <AppIcon :name="showPassword ? 'eye-off' : 'eye'" class="h-4 w-4" />

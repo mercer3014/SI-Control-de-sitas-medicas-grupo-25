@@ -145,7 +145,7 @@ class DatabaseSeeder extends Seeder
             [
                 'persona_id' => $pAdmin->id,
                 'rol_id' => 1,
-                'email' => 'admin@vidasalud.com',
+                'email' => 'admin@gmail.com',
                 'password' => Hash::make('admin123'),
                 'estado' => true,
                 'intentos_fallidos' => 0,

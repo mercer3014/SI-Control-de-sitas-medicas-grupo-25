@@ -30,6 +30,7 @@
               autocomplete="username"
               placeholder="nombre@correo.com"
               :class="[inputClass, 'pl-9']"
+              style="padding-left: 2.5rem !important;"
             />
           </div>
         </template>
