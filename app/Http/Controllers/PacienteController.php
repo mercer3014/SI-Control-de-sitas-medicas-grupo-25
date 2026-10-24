@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Paciente;
-use App\Models\Persona;
+use App\Models\PacienteModel;
+use App\Models\PersonaModel;
 use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +13,7 @@ class PacienteController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Paciente::with(['persona'])->latest();
+        $query = PacienteModel::with(['persona'])->latest();
 
         if ($request->filled('buscar')) {
             $term = '%' . trim($request->buscar) . '%';
@@ -61,7 +61,7 @@ class PacienteController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            $persona = Persona::create([
+            $persona = PersonaModel::create([
                 'ci' => trim($request->ci),
                 'nombres' => trim($request->nombres),
                 'apellidos' => trim($request->apellidos),
@@ -71,7 +71,7 @@ class PacienteController extends Controller
                 'direccion' => $request->direccion ? trim($request->direccion) : null,
             ]);
 
-            $paciente = Paciente::create([
+            $paciente = PacienteModel::create([
                 'persona_id' => $persona->id,
                 'tipo_sangre' => $request->tipo_sangre,
                 'contacto_emergencia_nombre' => $request->contacto_emergencia_nombre ? trim($request->contacto_emergencia_nombre) : null,
@@ -96,7 +96,7 @@ class PacienteController extends Controller
         return back()->with('success', 'Paciente registrado exitosamente.');
     }
 
-    public function show(Paciente $paciente)
+    public function show(PacienteModel $paciente)
     {
         $paciente->load(['persona', 'antecedentes', 'citas.medicoEspecialidad.medico.persona', 'citas.medicoEspecialidad.especialidad', 'citas.estado']);
 
@@ -105,7 +105,7 @@ class PacienteController extends Controller
         ]);
     }
 
-    public function update(Request $request, Paciente $paciente)
+    public function update(Request $request, PacienteModel $paciente)
     {
         $persona = $paciente->persona;
 
@@ -151,7 +151,7 @@ class PacienteController extends Controller
         return back()->with('success', 'Datos del paciente actualizados correctamente.');
     }
 
-    public function destroy(Paciente $paciente)
+    public function destroy(PacienteModel $paciente)
     {
         $nuevoEstado = !$paciente->estado;
         $paciente->update(['estado' => $nuevoEstado]);

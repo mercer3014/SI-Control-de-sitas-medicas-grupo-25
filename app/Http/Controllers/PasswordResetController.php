@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Usuario;
+use App\Models\UsuarioModel;
 use App\Services\BitacoraService;
 use App\Services\ResendService;
 use Illuminate\Http\Request;
@@ -28,7 +28,7 @@ class PasswordResetController extends Controller
             'email.exists' => 'No encontramos un usuario con este correo electrónico.',
         ]);
 
-        $usuario = Usuario::where('email', $request->email)->first();
+        $usuario = UsuarioModel::where('email', $request->email)->first();
 
         // Generar código numérico de 6 dígitos para facilidad de uso
         $token = (string) random_int(100000, 999999);
@@ -97,7 +97,7 @@ class PasswordResetController extends Controller
             return back()->withErrors(['token' => 'El código ha expirado. Por favor solicita uno nuevo.']);
         }
 
-        $usuario = Usuario::where('email', $request->email)->first();
+        $usuario = UsuarioModel::where('email', $request->email)->first();
         $usuario->password = Hash::make($request->password);
         $usuario->intentos_fallidos = 0;
         $usuario->bloqueado_hasta = null;

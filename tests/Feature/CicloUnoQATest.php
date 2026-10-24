@@ -3,13 +3,13 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\Usuario;
-use App\Models\Persona;
-use App\Models\Rol;
-use App\Models\Especialidad;
-use App\Models\Medico;
-use App\Models\Paciente;
-use App\Models\Bitacora;
+use App\Models\UsuarioModel;
+use App\Models\PersonaModel;
+use App\Models\RolModel;
+use App\Models\EspecialidadModel;
+use App\Models\MedicoModel;
+use App\Models\PacienteModel;
+use App\Models\BitacoraModel;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
@@ -18,8 +18,13 @@ class CicloUnoQATest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Asegurar que la base de datos tenga los seeders básicos
+        // Asegurar que la base de datos tenga los seeders básicos y el admin desbloqueado
         $this->artisan('db:seed');
+        UsuarioModel::where('username', 'admin')->update([
+            'intentos_fallidos' => 0,
+            'bloqueado_hasta' => null,
+            'estado' => true,
+        ]);
     }
 
     /**
@@ -47,7 +52,7 @@ class CicloUnoQATest extends TestCase
      */
     public function test_bloqueo_de_cuenta_tras_cinco_intentos_fallidos(): void
     {
-        $usuario = Usuario::where('username', 'admin')->first();
+        $usuario = UsuarioModel::where('username', 'admin')->first();
         $usuario->update(['intentos_fallidos' => 0, 'bloqueado_hasta' => null]);
 
         for ($i = 1; $i <= 5; $i++) {
@@ -89,7 +94,7 @@ class CicloUnoQATest extends TestCase
      */
     public function test_crear_especialidad_rechaza_duplicados(): void
     {
-        $admin = Usuario::where('username', 'admin')->first();
+        $admin = UsuarioModel::where('username', 'admin')->first();
 
         // Crear una especialidad
         $this->actingAs($admin)->post('/especialidades', [
@@ -115,8 +120,8 @@ class CicloUnoQATest extends TestCase
      */
     public function test_crear_medico_y_rechazar_matricula_duplicada(): void
     {
-        $admin = Usuario::where('username', 'admin')->first();
-        $esp = Especialidad::first();
+        $admin = UsuarioModel::where('username', 'admin')->first();
+        $esp = EspecialidadModel::first();
 
         // 1. Registro exitoso
         $this->actingAs($admin)->post('/medicos', [
@@ -158,7 +163,7 @@ class CicloUnoQATest extends TestCase
      */
     public function test_crear_paciente_y_rechazar_ci_duplicado(): void
     {
-        $admin = Usuario::where('username', 'admin')->first();
+        $admin = UsuarioModel::where('username', 'admin')->first();
 
         // 1. Registro exitoso
         $this->actingAs($admin)->post('/pacientes', [
@@ -195,10 +200,21 @@ class CicloUnoQATest extends TestCase
      */
     public function test_baja_logica_de_paciente_no_elimina_registro_fisico(): void
     {
-        $admin = Usuario::where('username', 'admin')->first();
-        $paciente = Paciente::first();
+        $admin = UsuarioModel::where('username', 'admin')->first();
+        
+        $randomCi = (string) random_int(10000000, 99999999);
+        $persona = PersonaModel::create([
+            'ci' => $randomCi,
+            'nombres' => 'Prueba',
+            'apellidos' => 'BajaLogica',
+            'fecha_nacimiento' => '1995-01-01',
+            'genero' => 'M',
+        ]);
+        $paciente = PacienteModel::create([
+            'persona_id' => $persona->id,
+            'estado' => true,
+        ]);
 
-        $this->assertNotNull($paciente);
         $this->assertTrue($paciente->estado);
 
         // Desactivar
@@ -215,7 +231,7 @@ class CicloUnoQATest extends TestCase
      */
     public function test_respaldo_sql_genera_contenido_valido(): void
     {
-        $admin = Usuario::where('username', 'admin')->first();
+        $admin = UsuarioModel::where('username', 'admin')->first();
 
         $response = $this->actingAs($admin)->get('/backups/download');
 

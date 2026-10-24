@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Permiso;
-use App\Models\Rol;
+use App\Models\PermisoModel;
+use App\Models\RolModel;
 use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,8 +12,8 @@ class RolController extends Controller
 {
     public function index()
     {
-        $roles = Rol::with(['permisos'])->withCount('usuarios')->orderBy('id')->get();
-        $permisos = Permiso::orderBy('nombre')->get();
+        $roles = RolModel::with(['permisos'])->withCount('usuarios')->orderBy('id')->get();
+        $permisos = PermisoModel::orderBy('nombre')->get();
 
         return Inertia::render('Roles/Index', [
             'roles' => $roles,
@@ -21,7 +21,7 @@ class RolController extends Controller
         ]);
     }
 
-    public function update(Request $request, Rol $rol)
+    public function update(Request $request, RolModel $rol)
     {
         $request->validate([
             'descripcion' => 'nullable|string|max:255',

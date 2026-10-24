@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Persona;
-use App\Models\Rol;
-use App\Models\Usuario;
+use App\Models\PersonaModel;
+use App\Models\RolModel;
+use App\Models\UsuarioModel;
 use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +15,7 @@ class UsuarioController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Usuario::with(['persona', 'rol'])->latest();
+        $query = UsuarioModel::with(['persona', 'rol'])->latest();
 
         if ($request->filled('buscar')) {
             $term = '%' . $request->buscar . '%';
@@ -39,7 +39,7 @@ class UsuarioController extends Controller
         }
 
         $usuarios = $query->paginate(15)->withQueryString();
-        $roles = Rol::where('estado', true)->get();
+        $roles = RolModel::where('estado', true)->get();
 
         return Inertia::render('Usuarios/Index', [
             'usuarios' => $usuarios,
@@ -70,7 +70,7 @@ class UsuarioController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            $persona = Persona::create([
+            $persona = PersonaModel::create([
                 'ci' => trim($request->ci),
                 'nombres' => trim($request->nombres),
                 'apellidos' => trim($request->apellidos),
@@ -80,7 +80,7 @@ class UsuarioController extends Controller
                 'direccion' => $request->direccion ? trim($request->direccion) : null,
             ]);
 
-            $usuario = Usuario::create([
+            $usuario = UsuarioModel::create([
                 'persona_id' => $persona->id,
                 'rol_id' => $request->rol_id,
                 'username' => strtolower(trim($request->username)),
@@ -100,7 +100,7 @@ class UsuarioController extends Controller
         return back()->with('success', 'Usuario registrado exitosamente.');
     }
 
-    public function update(Request $request, Usuario $usuario)
+    public function update(Request $request, UsuarioModel $usuario)
     {
         $persona = $usuario->persona;
 
@@ -153,7 +153,7 @@ class UsuarioController extends Controller
         return back()->with('success', 'Datos del usuario actualizados correctamente.');
     }
 
-    public function destroy(Usuario $usuario)
+    public function destroy(UsuarioModel $usuario)
     {
         // No permitir desactivar al propio usuario logueado
         if ($usuario->id === auth()->id()) {

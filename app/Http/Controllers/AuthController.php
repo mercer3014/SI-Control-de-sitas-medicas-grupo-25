@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Usuario;
+use App\Models\UsuarioModel;
 use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +32,7 @@ class AuthController extends Controller
 
         $loginInput = trim($request->login);
 
-        $usuario = Usuario::with('persona', 'rol')
+        $usuario = UsuarioModel::with('persona', 'rol')
             ->where(function ($q) use ($loginInput) {
                 $q->where('username', $loginInput)
                   ->orWhere('email', $loginInput);
@@ -51,7 +51,7 @@ class AuthController extends Controller
 
         // Verificar si la cuenta está bloqueada temporalmente
         if ($usuario->isBloqueado()) {
-            $minutosRestantes = now()->diffInMinutes($usuario->bloqueado_hasta) + 1;
+            $minutosRestantes = max(1, (int) ceil(now()->diffInSeconds($usuario->bloqueado_hasta) / 60));
             BitacoraService::registrar('ACCESO_BLOQUEADO', 'Seguridad', "Intento durante bloqueo temporal: {$usuario->username}", $usuario->id);
             return back()->withErrors([
                 'login' => "Cuenta bloqueada por seguridad. Podrás intentar nuevamente en {$minutosRestantes} minuto(s).",

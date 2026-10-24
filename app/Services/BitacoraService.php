@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Bitacora;
+use App\Models\BitacoraModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
@@ -14,7 +14,7 @@ class BitacoraService
             $uid = $usuarioId ?? Auth::id();
             $ip = Request::ip() ?? '127.0.0.1';
 
-            Bitacora::create([
+            BitacoraModel::create([
                 'usuario_id' => $uid,
                 'accion' => strtoupper($accion),
                 'modulo' => $modulo,

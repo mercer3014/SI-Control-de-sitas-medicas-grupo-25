@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Especialidad;
+use App\Models\EspecialidadModel;
 use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,7 +11,7 @@ class EspecialidadController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Especialidad::withCount('medicos')->latest();
+        $query = EspecialidadModel::withCount('medicos')->latest();
 
         if ($request->filled('buscar')) {
             $term = '%' . trim($request->buscar) . '%';
@@ -41,7 +41,7 @@ class EspecialidadController extends Controller
             'nombre.unique' => 'Ya existe una especialidad registrada con este nombre.',
         ]);
 
-        $esp = Especialidad::create([
+        $esp = EspecialidadModel::create([
             'nombre' => trim($request->nombre),
             'descripcion' => $request->descripcion ? trim($request->descripcion) : null,
             'estado' => true,
@@ -52,7 +52,7 @@ class EspecialidadController extends Controller
         return back()->with('success', "Especialidad '{$esp->nombre}' agregada con éxito.");
     }
 
-    public function update(Request $request, Especialidad $especialidad)
+    public function update(Request $request, EspecialidadModel $especialidad)
     {
         $request->validate([
             'nombre' => 'required|string|max:100|unique:especialidades,nombre,' . $especialidad->id,
@@ -74,7 +74,7 @@ class EspecialidadController extends Controller
         return back()->with('success', "Especialidad '{$especialidad->nombre}' actualizada correctamente.");
     }
 
-    public function destroy(Especialidad $especialidad)
+    public function destroy(EspecialidadModel $especialidad)
     {
         $nuevoEstado = !$especialidad->estado;
         $especialidad->update(['estado' => $nuevoEstado]);

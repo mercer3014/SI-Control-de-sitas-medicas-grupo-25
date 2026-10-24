@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Especialidad;
-use App\Models\Medico;
-use App\Models\MedicoEspecialidad;
-use App\Models\Persona;
+use App\Models\EspecialidadModel;
+use App\Models\MedicoModel;
+use App\Models\MedicoEspecialidadModel;
+use App\Models\PersonaModel;
 use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +15,7 @@ class MedicoController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Medico::with(['persona', 'especialidades'])->latest();
+        $query = MedicoModel::with(['persona', 'especialidades'])->latest();
 
         if ($request->filled('buscar')) {
             $term = '%' . trim($request->buscar) . '%';
@@ -40,7 +40,7 @@ class MedicoController extends Controller
         }
 
         $medicos = $query->paginate(15)->withQueryString();
-        $especialidades = Especialidad::where('estado', true)->orderBy('nombre')->get();
+        $especialidades = EspecialidadModel::where('estado', true)->orderBy('nombre')->get();
 
         return Inertia::render('Medicos/Index', [
             'medicos' => $medicos,
@@ -70,7 +70,7 @@ class MedicoController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            $persona = Persona::create([
+            $persona = PersonaModel::create([
                 'ci' => trim($request->ci),
                 'nombres' => trim($request->nombres),
                 'apellidos' => trim($request->apellidos),
@@ -80,14 +80,14 @@ class MedicoController extends Controller
                 'direccion' => $request->direccion ? trim($request->direccion) : null,
             ]);
 
-            $medico = Medico::create([
+            $medico = MedicoModel::create([
                 'persona_id' => $persona->id,
                 'matricula_profesional' => trim($request->matricula_profesional),
                 'estado' => true,
             ]);
 
             foreach ($request->especialidades as $esp) {
-                MedicoEspecialidad::create([
+                MedicoEspecialidadModel::create([
                     'medico_id' => $medico->id,
                     'especialidad_id' => $esp['id'],
                     'precio_consulta' => $esp['precio'] ?? 0,
@@ -104,7 +104,7 @@ class MedicoController extends Controller
         return back()->with('success', 'Médico registrado exitosamente con sus especialidades.');
     }
 
-    public function show(Medico $medico)
+    public function show(MedicoModel $medico)
     {
         $medico->load(['persona', 'especialidades', 'medicoEspecialidades.horarios.dia']);
 
@@ -113,7 +113,7 @@ class MedicoController extends Controller
         ]);
     }
 
-    public function update(Request $request, Medico $medico)
+    public function update(Request $request, MedicoModel $medico)
     {
         $persona = $medico->persona;
 
@@ -165,7 +165,7 @@ class MedicoController extends Controller
         return back()->with('success', 'Datos del médico actualizados correctamente.');
     }
 
-    public function destroy(Medico $medico)
+    public function destroy(MedicoModel $medico)
     {
         $nuevoEstado = !$medico->estado;
         $medico->update(['estado' => $nuevoEstado]);

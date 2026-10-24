@@ -4,14 +4,14 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Rol;
-use App\Models\Permiso;
-use App\Models\Persona;
-use App\Models\Usuario;
-use App\Models\DiaSemana;
-use App\Models\EstadoCita;
-use App\Models\Especialidad;
-use App\Models\Bitacora;
+use App\Models\RolModel;
+use App\Models\PermisoModel;
+use App\Models\PersonaModel;
+use App\Models\UsuarioModel;
+use App\Models\DiaSemanaModel;
+use App\Models\EstadoCitaModel;
+use App\Models\EspecialidadModel;
+use App\Models\BitacoraModel;
 
 class DatabaseSeeder extends Seeder
 {
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             ['id' => 7, 'nombre' => 'Domingo'],
         ];
         foreach ($dias as $d) {
-            DiaSemana::updateOrCreate(['id' => $d['id']], $d);
+            DiaSemanaModel::updateOrCreate(['id' => $d['id']], $d);
         }
 
         // 2. Estados de Cita
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
             ['id' => 5, 'nombre' => 'Inasistencia'],
         ];
         foreach ($estados as $est) {
-            EstadoCita::updateOrCreate(['id' => $est['id']], $est);
+            EstadoCitaModel::updateOrCreate(['id' => $est['id']], $est);
         }
 
         // 3. Roles
@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
             ['id' => 4, 'nombre' => 'Paciente', 'descripcion' => 'Portal de autoservicio para consulta y reserva de citas.'],
         ];
         foreach ($roles as $r) {
-            Rol::updateOrCreate(['id' => $r['id']], $r);
+            RolModel::updateOrCreate(['id' => $r['id']], $r);
         }
 
         // 4. Permisos
@@ -70,12 +70,12 @@ class DatabaseSeeder extends Seeder
             ['nombre' => 'ver_reportes', 'descripcion' => 'Generar reportes estadísticos y administrativos'],
         ];
 
-        $adminRol = Rol::find(1);
-        $recepRol = Rol::find(2);
-        $medicoRol = Rol::find(3);
+        $adminRol = RolModel::find(1);
+        $recepRol = RolModel::find(2);
+        $medicoRol = RolModel::find(3);
 
         foreach ($permisos as $p) {
-            $perm = Permiso::firstOrCreate(['nombre' => $p['nombre']], $p);
+            $perm = PermisoModel::firstOrCreate(['nombre' => $p['nombre']], $p);
             // Admin tiene todos los permisos
             $adminRol->permisos()->syncWithoutDetaching([$perm->id]);
 
@@ -91,7 +91,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // 5. Persona y Usuario Administrador Base
-        $adminPersona = Persona::firstOrCreate(
+        $adminPersona = PersonaModel::firstOrCreate(
             ['ci' => '10000001'],
             [
                 'nombres' => 'Administrador',
@@ -103,7 +103,7 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        Usuario::firstOrCreate(
+        UsuarioModel::firstOrCreate(
             ['username' => 'admin'],
             [
                 'persona_id' => $adminPersona->id,
@@ -123,11 +123,11 @@ class DatabaseSeeder extends Seeder
             ['nombre' => 'Cardiología', 'descripcion' => 'Prevención, diagnóstico y tratamiento de enfermedades cardiovasculares.'],
         ];
         foreach ($especialidades as $esp) {
-            Especialidad::firstOrCreate(['nombre' => $esp['nombre']], $esp);
+            EspecialidadModel::firstOrCreate(['nombre' => $esp['nombre']], $esp);
         }
 
         // Bitácora de inicialización
-        Bitacora::create([
+        BitacoraModel::create([
             'usuario_id' => 1,
             'accion' => 'INICIALIZACION_SISTEMA',
             'modulo' => 'Seguridad',

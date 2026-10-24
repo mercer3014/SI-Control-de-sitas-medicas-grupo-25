@@ -2,11 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class DiaSemana extends Model
+/**
+ * Alias de compatibilidad para DiaSemanaModel
+ */
+class DiaSemana extends DiaSemanaModel
 {
-    protected $table = 'dias_semana';
-    public $timestamps = false;
-    protected $fillable = ['id', 'nombre'];
 }
