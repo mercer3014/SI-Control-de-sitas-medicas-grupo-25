@@ -11,21 +11,27 @@ class BackupController extends Controller
 {
     public function index()
     {
-        $tables = DB::select("
-            SELECT 
-                relname as table_name,
-                n_live_tup as row_count,
-                pg_size_pretty(pg_total_relation_size(relid)) as total_size
-            FROM pg_stat_user_tables
-            ORDER BY relname ASC;
-        ");
+        $driver = config('database.default');
+        if ($driver === 'pgsql') {
+            $tables = DB::select("
+                SELECT 
+                    relname as table_name,
+                    n_live_tup as row_count,
+                    pg_size_pretty(pg_total_relation_size(relid)) as total_size
+                FROM pg_stat_user_tables
+                ORDER BY relname ASC;
+            ");
 
-        $dbSize = DB::select("SELECT pg_size_pretty(pg_database_size(current_database())) as size;")[0]->size ?? '0 MB';
+            $dbSize = DB::select("SELECT pg_size_pretty(pg_database_size(current_database())) as size;")[0]->size ?? '0 MB';
+        } else {
+            $tables = [];
+            $dbSize = 'Local DB';
+        }
 
         return Inertia::render('Backups/Index', [
             'tables' => $tables,
             'dbSize' => $dbSize,
-            'dbName' => config('database.connections.pgsql.database'),
+            'dbName' => config("database.connections.{$driver}.database", 'clinica_db'),
         ]);
     }
 

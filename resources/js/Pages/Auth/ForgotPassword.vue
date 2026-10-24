@@ -3,12 +3,10 @@
     <Head title="Recuperar contraseña" />
 
     <div class="mb-8">
-      <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-100">
-        <AppIcon name="key" class="h-6 w-6 text-brand-700" />
-      </div>
+      <ApplicationLogo size="lg" variant="light" class="mb-5" />
       <h1 class="text-[24px] font-bold tracking-tight text-stone-900">Recuperar contraseña</h1>
       <p class="mt-1.5 text-[13.5px] leading-relaxed text-stone-500">
-        Ingresa tu correo institucional y te enviaremos un código de verificación de 6 dígitos válido por 15 minutos.
+        Ingresa tu correo electrónico y te enviaremos un código de verificación de 6 dígitos válido por 15 minutos.
       </p>
     </div>
 
@@ -64,6 +62,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import FormField from '@/Components/FormField.vue';
 import AppIcon from '@/Components/AppIcon.vue';
+import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 
 const form = useForm({
   email: '',

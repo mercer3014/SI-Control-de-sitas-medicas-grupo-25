@@ -5,18 +5,13 @@
       collapsed ? 'w-[68px]' : 'w-60'
     ]"
   >
-    <!-- Marca / Cabecera -->
-    <div class="flex h-16 shrink-0 items-center gap-3 border-b border-slate-800 px-4">
-      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-white border border-slate-700 shadow-sm">
-        <AppIcon name="heart-pulse" class="h-5 w-5" :stroke-width="2" />
-      </div>
-      <div v-if="!collapsed" class="min-w-0 leading-tight">
-        <span class="block text-sm font-bold tracking-wide text-white">CLÍNICA</span>
-      </div>
+    <!-- Marca / Cabecera con Logo de Clínica Vida Salud -->
+    <div class="flex h-16 shrink-0 items-center justify-between border-b border-slate-800 px-3.5">
+      <ApplicationLogo size="sm" variant="dark" :collapsed="collapsed" />
       <button
         type="button"
         @click="$emit('toggle')"
-        class="ml-auto rounded p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition cursor-pointer"
+        class="rounded p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition cursor-pointer"
         :class="{ 'hidden': collapsed }"
         title="Colapsar menú"
       >
@@ -89,6 +84,7 @@ import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import AppIcon from './AppIcon.vue';
 import Avatar from './Avatar.vue';
+import ApplicationLogo from './ApplicationLogo.vue';
 
 defineProps({
   collapsed: { type: Boolean, default: false },

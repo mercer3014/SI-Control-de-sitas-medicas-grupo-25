@@ -3,9 +3,7 @@
     <Head title="Iniciar sesión" />
 
     <div class="mb-7">
-      <div class="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
-        <AppIcon name="heart-pulse" class="h-6 w-6" :stroke-width="1.8" />
-      </div>
+      <ApplicationLogo size="lg" variant="light" class="mb-5" />
       <h1 class="text-2xl font-bold tracking-tight text-slate-900">Iniciar sesión</h1>
     </div>
 
@@ -121,6 +119,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import FormField from '@/Components/FormField.vue';
 import AppIcon from '@/Components/AppIcon.vue';
+import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 
 const showPassword = ref(false);
 

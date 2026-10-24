@@ -12,11 +12,9 @@
 
     <!-- Panel derecho con formulario -->
     <div class="relative flex items-center justify-center bg-white px-6 py-12 sm:px-12">
-      <!-- Icono visible en móvil -->
-      <div class="absolute top-6 left-6 flex items-center gap-2 lg:hidden">
-        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
-          <AppIcon name="heart-pulse" class="h-5 w-5" :stroke-width="2" />
-        </div>
+      <!-- Logo visible en móvil -->
+      <div class="absolute top-6 left-6 flex items-center lg:hidden">
+        <ApplicationLogo size="sm" variant="light" />
       </div>
 
       <div class="w-full max-w-[380px]">
@@ -28,4 +26,5 @@
 
 <script setup>
 import AppIcon from '@/Components/AppIcon.vue';
+import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 </script>

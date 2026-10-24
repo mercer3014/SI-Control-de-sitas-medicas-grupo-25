@@ -24,7 +24,7 @@
       </main>
 
       <footer class="border-t border-slate-200/70 px-6 py-3 text-center text-[11px] text-slate-400">
-        &copy; {{ new Date().getFullYear() }} — Sistema Clínico
+        &copy; {{ new Date().getFullYear() }} — Clínica Vida Salud
       </footer>
     </div>
 
