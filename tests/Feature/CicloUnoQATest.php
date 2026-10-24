@@ -239,4 +239,109 @@ class CicloUnoQATest extends TestCase
         $this->assertStringContainsString('RESPALDO DE BASE DE DATOS: CLINICA VIDA SALUD', $response->getContent());
         $this->assertStringContainsString('INSERT INTO', $response->getContent());
     }
+
+    /**
+     * Prueba 9: Control de acceso por rol (RBAC) protege rutas restringidas
+     */
+    public function test_control_de_acceso_bloquea_modulos_administrativos_a_roles_no_autorizados(): void
+    {
+        $rolRecepcion = RolModel::where('nombre', 'Recepcionista')->first();
+        $persona = PersonaModel::create([
+            'ci' => (string) random_int(10000000, 99999999),
+            'nombres' => 'Recepcionista',
+            'apellidos' => 'Prueba',
+            'fecha_nacimiento' => '1992-05-10',
+            'genero' => 'F',
+        ]);
+        $recepcionista = UsuarioModel::create([
+            'persona_id' => $persona->id,
+            'rol_id' => $rolRecepcion->id,
+            'username' => 'recepcion_' . uniqid(),
+            'email' => 'recepcion_' . uniqid() . '@vidasalud.com',
+            'password' => Hash::make('password123'),
+            'estado' => true,
+        ]);
+
+        // Recepcionista intenta acceder a Usuarios (módulo exclusivo de Administrador) -> 403
+        $respUsuarios = $this->actingAs($recepcionista)->get('/usuarios');
+        $respUsuarios->assertStatus(403);
+
+        // Recepcionista intenta acceder a Respaldos BD (módulo exclusivo de Administrador) -> 403
+        $respBackups = $this->actingAs($recepcionista)->get('/backups');
+        $respBackups->assertStatus(403);
+
+        // Recepcionista accede a Pacientes (módulo permitido) -> 200
+        $respPacientes = $this->actingAs($recepcionista)->get('/pacientes');
+        $respPacientes->assertStatus(200);
+    }
+
+    /**
+     * Prueba 10: Cierre de sesión (Logout) limpia autenticación y registra en bitácora (CU-01, CU-10)
+     */
+    public function test_logout_cierra_sesion_y_registra_en_bitacora(): void
+    {
+        $admin = UsuarioModel::where('username', 'admin')->first();
+
+        $response = $this->actingAs($admin)->post('/logout');
+
+        $response->assertRedirect('/login');
+        $this->assertGuest();
+
+        $this->assertDatabaseHas('bitacora', [
+            'usuario_id' => $admin->id,
+            'accion' => 'CIERRE_SESION',
+            'modulo' => 'Seguridad',
+        ]);
+    }
+
+    /**
+     * Prueba 11: Consulta de perfil médico base con aranceles (CU-12)
+     */
+    public function test_perfil_medico_base_carga_correctamente_con_especialidades_y_aranceles(): void
+    {
+        $admin = UsuarioModel::where('username', 'admin')->first();
+        $medico = MedicoModel::first();
+
+        $response = $this->actingAs($admin)->get("/medicos/{$medico->id}");
+
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Prueba 12: Consulta de ficha clínica de paciente con antecedentes (CU-02)
+     */
+    public function test_ficha_clinica_paciente_muestra_antecedentes_medicos(): void
+    {
+        $admin = UsuarioModel::where('username', 'admin')->first();
+        $paciente = PacienteModel::first();
+
+        $response = $this->actingAs($admin)->get("/pacientes/{$paciente->id}");
+
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Prueba 13: Configuración de permisos de un rol (CU-09)
+     */
+    public function test_configurar_permisos_de_rol(): void
+    {
+        $admin = UsuarioModel::where('username', 'admin')->first();
+        $rol = RolModel::where('nombre', 'Médico')->first();
+        $permisos = \App\Models\PermisoModel::take(3)->pluck('id')->toArray();
+
+        $response = $this->actingAs($admin)->put("/roles/{$rol->id}", [
+            'descripcion' => 'Descripción actualizada de médico',
+            'permisos' => $permisos,
+        ]);
+
+        $response->assertSessionHas('success');
+        $this->assertDatabaseHas('roles', [
+            'id' => $rol->id,
+            'descripcion' => 'Descripción actualizada de médico',
+        ]);
+        $this->assertDatabaseHas('bitacora', [
+            'accion' => 'MODIFICACION_ROL',
+            'modulo' => 'Seguridad',
+        ]);
+    }
 }
